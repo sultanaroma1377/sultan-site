@@ -30,7 +30,9 @@ function CartPage() {
   const active = current.cart.filter((i) => !i.savedForLater);
   const saved = current.cart.filter((i) => i.savedForLater);
 
-  const update = (fn: (cart: typeof current.cart) => typeof current.cart) =>
+  type CartItem = { productId: string; qty: number; savedForLater?: boolean };
+  const update = (fn: (cart: CartItem[]) => CartItem[]) =>
+
     store.set((s) => ({
       ...s,
       customers: s.customers.map((c) => (c.id === current.id ? { ...c, cart: fn(c.cart) } : c)),
