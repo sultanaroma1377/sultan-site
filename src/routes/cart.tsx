@@ -121,9 +121,12 @@ function CartPage() {
             <span>Total</span>
             <span>₹{total.toLocaleString("en-IN")}</span>
           </div>
-          <Link to="/checkout" disabled={active.length === 0}>
-            <Button className="mt-4 w-full" disabled={active.length === 0}>Checkout</Button>
-          </Link>
+          {active.length === 0 ? (
+            <Button className="mt-4 w-full" disabled>Checkout</Button>
+          ) : (
+            <Link to="/checkout"><Button className="mt-4 w-full">Checkout</Button></Link>
+          )}
+
         </aside>
       </div>
       <UserFooter />
