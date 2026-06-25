@@ -6,6 +6,10 @@ import rosePetals from "@/assets/rose-petals.png";
 import saffron from "@/assets/saffron.png";
 import oud from "@/assets/oud.png";
 
+function angleDiff(a: number, b: number) {
+  return (((a - b + 180) % 360) + 360) % 360 - 180;
+}
+
 export function FeaturedSpiral() {
   const products = useStore((s) => s.products);
   const current = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId) ?? null);
@@ -40,6 +44,7 @@ export function FeaturedSpiral() {
     }
     return true;
   };
+
   const toggleFav = (pid: string) => {
     if (!requireLogin()) return;
     store.set((s) => ({
@@ -51,6 +56,7 @@ export function FeaturedSpiral() {
       ),
     }));
   };
+
   const addCart = (pid: string) => {
     if (!requireLogin()) return;
     store.set((s) => ({
@@ -70,51 +76,60 @@ export function FeaturedSpiral() {
   };
 
   const count = featured.length;
-  const radius = 280;
-  const verticalSpan = 360; // px from top to bottom of spiral
-  const baseRotate = progress * 540; // total degrees of rotation across scroll
-  const bob = Math.sin(progress * Math.PI * 2) * 20;
+  const radius = 320;
+  const verticalSpan = 900;
+  const trackTravel = 720;
+  const straightenWindow = 25;
+  const baseRotate = progress * 720;
+  const trackY = (0.5 - progress) * trackTravel;
+  const bob = Math.sin(progress * Math.PI * 2) * 15;
 
   const ingredients: { name: string; src: string; size: number }[] = [
-    { name: "Rose Petals", src: rosePetals, size: 150 },
-    { name: "Saffron", src: saffron, size: 130 },
-    { name: "Oud", src: oud, size: 140 },
+    { name: "Rose Petals", src: rosePetals, size: 140 },
+    { name: "Saffron", src: saffron, size: 120 },
+    { name: "Oud", src: oud, size: 130 },
   ];
 
   return (
-    <section ref={wrapRef} className="relative" style={{ height: "260vh" }}>
+    <section ref={wrapRef} className="relative" style={{ height: "320vh" }}>
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-background via-[oklch(0.16_0.02_50)] to-background">
-        {/* ambient glow */}
+        {/* Ambient Glow */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.7_0.15_30/0.18),transparent_70%)] blur-2xl" />
+          <div className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,oklch(0.7_0.15_30/0.2),transparent_70%)] blur-3xl" />
         </div>
 
-        <div className="absolute left-6 top-8 z-10 max-w-sm">
+        {/* Foreground Copy */}
+        <div className="absolute left-6 top-8 z-20 max-w-sm">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Featured</p>
           <h2 className="mt-2 font-serif text-4xl md:text-5xl">The Essence Collection</h2>
-          <p className="mt-3 text-sm text-muted-foreground">Scroll to drift through our signature blends — built around rose petals, saffron, and oud.</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Scroll to drift through our signature blends — orbiting around real notes of rose petals, saffron, and rich oud.
+          </p>
         </div>
 
+        {/* --- GLOBAL 3D WORLD STAGE --- */}
         <div
           className="relative h-full w-full"
-          style={{ perspective: "1400px", perspectiveOrigin: "50% 50%" }}
+          style={{ perspective: "1600px", perspectiveOrigin: "50% 50%" }}
         >
-          {/* central ingredient column — real images stacked vertically */}
+          {/* CENTRAL CORE: Ingredients Column */}
           <div
-            className="absolute left-1/2 top-1/2 flex flex-col items-center gap-2"
+            className="absolute left-1/2 top-1/2 flex flex-col items-center gap-6"
             style={{
               transform: `translate(-50%, -50%) translateY(${bob}px)`,
               transformStyle: "preserve-3d",
             }}
           >
-            {/* glowing vertical stem behind */}
-            <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-full w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[oklch(0.8_0.15_30/0.65)] to-transparent shadow-[0_0_40px_oklch(0.8_0.15_30/0.6)]" />
+            <div
+              className="pointer-events-none absolute left-1/2 -z-10 -translate-x-1/2 bg-gradient-to-b from-transparent via-[oklch(0.8_0.15_30/0.7)] to-transparent shadow-[0_0_50px_oklch(0.8_0.15_30/0.7)]"
+              style={{ width: "2px", height: `${verticalSpan + 200}px`, top: `-${(verticalSpan + 200) / 2}px` }}
+            />
             {ingredients.map((ing, i) => (
               <div
                 key={ing.name}
                 className="relative"
                 style={{
-                  transform: `rotateY(${baseRotate * 0.4 + i * 30}deg)`,
+                  transform: `rotateY(${baseRotate * 0.3 + i * 40}deg)`,
                   transformStyle: "preserve-3d",
                 }}
               >
@@ -124,40 +139,53 @@ export function FeaturedSpiral() {
                   width={ing.size}
                   height={ing.size}
                   loading="lazy"
-                  className="drop-shadow-[0_0_25px_oklch(0.8_0.15_30/0.55)]"
+                  className="drop-shadow-[0_0_30px_oklch(0.8_0.15_30/0.6)]"
                   style={{ width: ing.size, height: ing.size, objectFit: "contain" }}
                 />
-                <span className="absolute left-1/2 top-full -translate-x-1/2 whitespace-nowrap font-serif text-xs tracking-[0.3em] text-[oklch(0.85_0.08_30)] uppercase">
+                <span className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap font-serif text-xs uppercase tracking-[0.3em] text-[oklch(0.85_0.08_30)]">
                   {ing.name}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* helix of product cards — true vertical spiral */}
+          {/* HELIX STAGE */}
           <div
             className="absolute left-1/2 top-1/2"
             style={{
               transformStyle: "preserve-3d",
-              transform: `translate(-50%, -50%) translateY(${-bob}px)`,
+              transform: `translate(-50%, -50%) translateY(${trackY}px)`,
             }}
           >
             {featured.map((p, i) => {
-              // true helix: even angular step + even vertical step
-              const angleStep = 75; // degrees between consecutive cards
-              const angle = baseRotate + i * angleStep;
+              const angleStep = 360 / count;
+              const currentAngle = i * angleStep;
               const y = (i - (count - 1) / 2) * (verticalSpan / Math.max(1, count - 1));
               const fav = current?.favorites.includes(p.id);
+
+              const worldRotation = ((currentAngle + baseRotate) % 360 + 360) % 360;
+              const diffFromFront = angleDiff(worldRotation, 0);
+              const straighten = Math.max(0, 1 - Math.abs(diffFromFront) / straightenWindow) ** 2;
+              const faceCorrection = -worldRotation * straighten;
+              const isFront = straighten > 0.9;
+
               return (
                 <div
                   key={p.id}
                   className="absolute left-0 top-0"
                   style={{
-                    transform: `translate(-50%, -50%) rotateY(${angle}deg) translateZ(${radius}px) translateY(${y}px) rotateY(${-angle}deg)`,
+                    transform: `translate(-50%, -50%) rotateY(${currentAngle + baseRotate}deg) translateZ(${radius}px) translateY(${y}px) rotateY(${-(currentAngle + baseRotate) + faceCorrection}deg)`,
                     transformStyle: "preserve-3d",
+                    zIndex: isFront ? 20 : 10,
                   }}
                 >
-                  <article className="group relative w-44 overflow-hidden rounded-xl border border-[oklch(0.7_0.12_30/0.45)] bg-card/80 backdrop-blur transition before:pointer-events-none before:absolute before:inset-0 before:rounded-xl before:shadow-[0_0_25px_oklch(0.75_0.18_30/0.55),inset_0_0_20px_oklch(0.7_0.15_30/0.25)] before:content-['']">
+                  <article
+                    className={`group relative w-48 overflow-hidden rounded-xl border bg-card/85 backdrop-blur transition-all duration-300 ${
+                      isFront
+                        ? "border-[oklch(0.8_0.18_30/0.8)] shadow-[0_0_45px_oklch(0.8_0.2_30/0.7),inset_0_0_25px_oklch(0.75_0.18_30/0.3)] scale-110"
+                        : "border-[oklch(0.7_0.12_30/0.45)] shadow-[0_0_25px_oklch(0.75_0.18_30/0.4),inset_0_0_20px_oklch(0.7_0.15_30/0.2)]"
+                    }`}
+                  >
                     <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-secondary to-muted">
                       {p.image ? (
                         <img src={p.image} alt={p.name} className="h-full w-full object-cover" />
@@ -168,7 +196,7 @@ export function FeaturedSpiral() {
                       )}
                       <button
                         onClick={() => toggleFav(p.id)}
-                        className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-background/80 backdrop-blur"
+                        className="absolute right-2 top-2 z-30 grid h-8 w-8 place-items-center rounded-full bg-background/90 text-foreground shadow-md backdrop-blur transition-transform active:scale-95"
                         aria-label="Favorite"
                       >
                         <Heart className={`h-3.5 w-3.5 ${fav ? "fill-destructive text-destructive" : ""}`} />
@@ -181,7 +209,7 @@ export function FeaturedSpiral() {
                       </div>
                       <button
                         onClick={() => addCart(p.id)}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 active:scale-95"
                         aria-label="Add to cart"
                       >
                         <ShoppingBag className="h-3.5 w-3.5" />
@@ -194,8 +222,9 @@ export function FeaturedSpiral() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          Scroll ↓
+        {/* Scroll Indicator */}
+        <div className="pointer-events-none absolute bottom-6 left-1/2 z-20 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+          Scroll Down ↓
         </div>
       </div>
     </section>
