@@ -3,6 +3,7 @@ import { Heart, Search, ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
+import { FeaturedSpiral } from "@/components/FeaturedSpiral";
 import { store, useStore } from "@/lib/store";
 import { toast } from "sonner";
 
