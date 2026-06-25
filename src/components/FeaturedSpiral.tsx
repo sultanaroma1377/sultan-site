@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import rosePetals from "@/assets/rose-petals.png";
 import saffron from "@/assets/saffron.png";
 import oud from "@/assets/oud.png";
-import { toast } from "sonner";
 
 export function FeaturedSpiral() {
   const products = useStore((s) => s.products);
@@ -76,7 +75,11 @@ export function FeaturedSpiral() {
   const baseRotate = progress * 540; // total degrees of rotation across scroll
   const bob = Math.sin(progress * Math.PI * 2) * 20;
 
-  const ingredients = ["Rose Petals", "Saffron", "Oud", "Jasmine", "Amber"];
+  const ingredients: { name: string; src: string; size: number }[] = [
+    { name: "Rose Petals", src: rosePetals, size: 150 },
+    { name: "Saffron", src: saffron, size: 130 },
+    { name: "Oud", src: oud, size: 140 },
+  ];
 
   return (
     <section ref={wrapRef} className="relative" style={{ height: "260vh" }}>
@@ -96,28 +99,42 @@ export function FeaturedSpiral() {
           className="relative h-full w-full"
           style={{ perspective: "1400px", perspectiveOrigin: "50% 50%" }}
         >
-          {/* central ingredient column */}
+          {/* central ingredient column — real images stacked vertically */}
           <div
-            className="absolute left-1/2 top-1/2 flex flex-col items-center gap-4"
+            className="absolute left-1/2 top-1/2 flex flex-col items-center gap-2"
             style={{
-              transform: `translate(-50%, -50%) translateY(${bob}px) rotateY(${-baseRotate * 0.3}deg)`,
+              transform: `translate(-50%, -50%) translateY(${bob}px)`,
               transformStyle: "preserve-3d",
             }}
           >
+            {/* glowing vertical stem behind */}
+            <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-full w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-[oklch(0.8_0.15_30/0.65)] to-transparent shadow-[0_0_40px_oklch(0.8_0.15_30/0.6)]" />
             {ingredients.map((ing, i) => (
               <div
-                key={ing}
-                className="rounded-full border border-[oklch(0.7_0.12_30/0.4)] bg-[oklch(0.2_0.02_40/0.6)] px-5 py-2 font-serif text-lg tracking-wide text-[oklch(0.88_0.08_30)] shadow-[0_0_30px_oklch(0.7_0.15_30/0.35)] backdrop-blur"
-                style={{ transform: `translateZ(0px) rotateX(${Math.sin((progress * 2 + i) * Math.PI) * 8}deg)` }}
+                key={ing.name}
+                className="relative"
+                style={{
+                  transform: `rotateY(${baseRotate * 0.4 + i * 30}deg)`,
+                  transformStyle: "preserve-3d",
+                }}
               >
-                {ing}
+                <img
+                  src={ing.src}
+                  alt={ing.name}
+                  width={ing.size}
+                  height={ing.size}
+                  loading="lazy"
+                  className="drop-shadow-[0_0_25px_oklch(0.8_0.15_30/0.55)]"
+                  style={{ width: ing.size, height: ing.size, objectFit: "contain" }}
+                />
+                <span className="absolute left-1/2 top-full -translate-x-1/2 whitespace-nowrap font-serif text-xs tracking-[0.3em] text-[oklch(0.85_0.08_30)] uppercase">
+                  {ing.name}
+                </span>
               </div>
             ))}
-            {/* glowing vertical stem */}
-            <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[oklch(0.8_0.15_30/0.6)] to-transparent" />
           </div>
 
-          {/* spiral of product cards */}
+          {/* helix of product cards — true vertical spiral */}
           <div
             className="absolute left-1/2 top-1/2"
             style={{
@@ -126,9 +143,10 @@ export function FeaturedSpiral() {
             }}
           >
             {featured.map((p, i) => {
-              const t = i / Math.max(1, count - 1); // 0..1
-              const angle = baseRotate + t * 360 + i * (360 / count);
-              const y = (t - 0.5) * verticalSpan;
+              // true helix: even angular step + even vertical step
+              const angleStep = 75; // degrees between consecutive cards
+              const angle = baseRotate + i * angleStep;
+              const y = (i - (count - 1) / 2) * (verticalSpan / Math.max(1, count - 1));
               const fav = current?.favorites.includes(p.id);
               return (
                 <div
