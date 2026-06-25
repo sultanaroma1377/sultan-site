@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Heart, ShoppingBag } from "lucide-react";
 import { store, useStore } from "@/lib/store";
 import { toast } from "sonner";
+import rosePetals from "@/assets/rose-petals.png";
+import saffron from "@/assets/saffron.png";
+import oud from "@/assets/oud.png";
+import { toast } from "sonner";
 
 export function FeaturedSpiral() {
   const products = useStore((s) => s.products);
