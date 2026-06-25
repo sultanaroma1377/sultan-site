@@ -73,7 +73,10 @@ function Storefront() {
         </div>
       </section>
 
+      <FeaturedSpiral />
+
       <section className="mx-auto max-w-6xl px-4 py-12 md:px-6">
+
         <div className="mb-8 flex items-end justify-between gap-4">
           <h2 className="font-serif text-3xl">Our Perfumes</h2>
           <div className="relative w-full max-w-xs">
