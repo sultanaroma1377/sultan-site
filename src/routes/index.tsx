@@ -61,7 +61,13 @@ function Storefront() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Gradient bubbles background */}
+      <div className="gradient-bubble bubble-1" />
+      <div className="gradient-bubble bubble-2" />
+      <div className="gradient-bubble bubble-3" />
+      <div className="gradient-bubble bubble-4" />
+
       <UserHeader />
 
       <section>
