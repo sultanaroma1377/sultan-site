@@ -104,3 +104,7 @@
 @utility bg-theme-gradient {
   background: linear-gradient(180deg, #277560 0%, #3C966C 100%);
 }
+
+@utility bg-theme-gradient-reverse {
+  background: linear-gradient(180deg, #3C966C 0%, #277560 100%);
+}
