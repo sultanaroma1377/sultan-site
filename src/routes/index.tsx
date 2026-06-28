@@ -64,7 +64,7 @@ function Storefront() {
     <div className="min-h-screen">
       <UserHeader />
 
-      <section className="bg-gradient-to-b from-secondary/60 via-background to-background">
+      <section>
         <div className="mx-auto max-w-5xl px-6 py-20 text-center">
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-muted-foreground">New Season</p>
           <h1 className="font-serif text-5xl leading-tight md:text-7xl">{site.name}</h1>
@@ -82,7 +82,7 @@ function Storefront() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search…"
-              className="w-full rounded-full border bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-full border border-white/20 bg-white/10 py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/60 outline-none focus:ring-2 focus:ring-white/40"
             />
           </div>
         </div>
@@ -91,7 +91,7 @@ function Storefront() {
           {filtered.map((p) => {
             const fav = current?.favorites.includes(p.id);
             return (
-              <article key={p.id} className="group flex flex-col overflow-hidden rounded-lg border bg-card transition hover:shadow-lg">
+              <article key={p.id} className="group flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/10 backdrop-blur-md transition hover:shadow-lg">
                 <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-secondary to-muted">
                   {p.image ? (
                     <img src={p.image} alt={p.name} className="h-full w-full object-cover transition group-hover:scale-105" />
@@ -102,7 +102,7 @@ function Storefront() {
                   )}
                   <button
                     onClick={() => toggleFav(p.id)}
-                    className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-background/80 backdrop-blur hover:bg-background"
+                    className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-white/20 backdrop-blur-md hover:bg-white/30"
                     aria-label="Favorite"
                   >
                     <Heart className={`h-4 w-4 ${fav ? "fill-destructive text-destructive" : ""}`} />

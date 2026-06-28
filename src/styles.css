@@ -63,29 +63,29 @@
 }
 
 .dark, html.dark {
-  /* Green gradient theme */
-  --background: #0f1f18;
+  /* Green gradient theme — translucent so body gradient flows through */
+  --background: transparent;
   --foreground: #ffffff;
-  --card: #162e24;
+  --card: rgba(255,255,255,0.10);
   --card-foreground: #ffffff;
-  --popover: #162e24;
+  --popover: rgba(255,255,255,0.10);
   --popover-foreground: #ffffff;
   --primary: #ffffff;
   --primary-foreground: #0f1f18;
-  --secondary: #1e4535;
+  --secondary: rgba(255,255,255,0.05);
   --secondary-foreground: #ffffff;
-  --muted: #1a3d2e;
-  --muted-foreground: #a8c5b5;
+  --muted: rgba(255,255,255,0.05);
+  --muted-foreground: rgba(255,255,255,0.72);
   --accent: #3C966C;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(255,255,255,0.1);
+  --border: rgba(255,255,255,0.12);
   --input: rgba(255,255,255,0.14);
   --ring: #3C966C;
   --blush: #3C966C;
   --sage: #277560;
-  --taupe: #1e4535;
+  --taupe: rgba(255,255,255,0.05);
 }
 
 @layer base {
