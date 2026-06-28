@@ -100,3 +100,7 @@
     letter-spacing: -0.01em;
   }
 }
+
+@utility bg-theme-gradient {
+  background: linear-gradient(180deg, #277560 0%, #3C966C 100%);
+}
