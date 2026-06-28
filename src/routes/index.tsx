@@ -91,7 +91,7 @@ function Storefront() {
           {filtered.map((p) => {
             const fav = current?.favorites.includes(p.id);
             return (
-              <article key={p.id} className="group flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/10 backdrop-blur-md transition hover:shadow-lg">
+              <article key={p.id} className="group flex flex-col overflow-hidden rounded-lg border border-white/20 bg-theme-gradient-reverse backdrop-blur-md transition hover:shadow-lg">
                 <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-secondary to-muted">
                   {p.image ? (
                     <img src={p.image} alt={p.name} className="h-full w-full object-cover transition group-hover:scale-105" />
