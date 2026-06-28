@@ -91,7 +91,7 @@
 @layer base {
   * { border-color: var(--color-border); }
   body {
-    background-color: var(--color-background);
+    background: linear-gradient(180deg, #277560 0%, #3C966C 100%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
