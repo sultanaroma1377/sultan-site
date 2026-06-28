@@ -3,7 +3,6 @@ import { Heart, Search, ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
-import { FeaturedSpiral } from "@/components/FeaturedSpiral";
 import { store, useStore } from "@/lib/store";
 import { toast } from "sonner";
 
@@ -72,8 +71,6 @@ function Storefront() {
           <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground md:text-lg">{site.tagline}</p>
         </div>
       </section>
-
-      <FeaturedSpiral />
 
       <section className="mx-auto max-w-6xl px-4 py-12 md:px-6">
 
