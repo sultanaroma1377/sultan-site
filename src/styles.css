@@ -63,29 +63,29 @@
 }
 
 .dark, html.dark {
-  /* Soft Bloom — Night: deep plum/charcoal with blush + saffron glow */
-  --background: oklch(0.16 0.015 40);
-  --foreground: oklch(0.95 0.02 70);
-  --card: oklch(0.21 0.018 40);
-  --card-foreground: oklch(0.95 0.02 70);
-  --popover: oklch(0.21 0.018 40);
-  --popover-foreground: oklch(0.95 0.02 70);
-  --primary: oklch(0.85 0.09 30);          /* warm blush */
-  --primary-foreground: oklch(0.18 0.02 40);
-  --secondary: oklch(0.26 0.025 30);
-  --secondary-foreground: oklch(0.95 0.02 70);
-  --muted: oklch(0.24 0.015 50);
-  --muted-foreground: oklch(0.72 0.02 60);
-  --accent: oklch(0.7 0.12 80);            /* saffron */
-  --accent-foreground: oklch(0.18 0.02 40);
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.98 0.01 70);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.75 0.1 30);
-  --blush: oklch(0.85 0.09 25);
-  --sage: oklch(0.6 0.05 140);
-  --taupe: oklch(0.55 0.02 60);
+  /* Green gradient theme */
+  --background: #0f1f18;
+  --foreground: #ffffff;
+  --card: #162e24;
+  --card-foreground: #ffffff;
+  --popover: #162e24;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #0f1f18;
+  --secondary: #1e4535;
+  --secondary-foreground: #ffffff;
+  --muted: #1a3d2e;
+  --muted-foreground: #a8c5b5;
+  --accent: #3C966C;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255,255,255,0.1);
+  --input: rgba(255,255,255,0.14);
+  --ring: #3C966C;
+  --blush: #3C966C;
+  --sage: #277560;
+  --taupe: #1e4535;
 }
 
 @layer base {
