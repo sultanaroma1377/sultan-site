@@ -63,29 +63,31 @@
 }
 
 .dark, html.dark {
-  /* Green gradient theme — translucent so body gradient flows through */
+  /* Light glass theme on a near-white background with green accents */
   --background: transparent;
-  --foreground: #ffffff;
-  --card: rgba(255,255,255,0.10);
-  --card-foreground: #ffffff;
-  --popover: rgba(255,255,255,0.10);
-  --popover-foreground: #ffffff;
-  --primary: #ffffff;
-  --primary-foreground: #0f1f18;
-  --secondary: rgba(255,255,255,0.05);
-  --secondary-foreground: #ffffff;
-  --muted: rgba(255,255,255,0.05);
-  --muted-foreground: rgba(255,255,255,0.72);
+  --foreground: #10241d;
+  --card: rgba(255,255,255,0.55);
+  --card-foreground: #10241d;
+  --popover: #ffffff;
+  --popover-foreground: #10241d;
+  --primary: #277560;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(60,150,108,0.10);
+  --secondary-foreground: #10241d;
+  --muted: rgba(60,150,108,0.08);
+  --muted-foreground: rgba(16,36,29,0.68);
   --accent: #3C966C;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: rgba(255,255,255,0.12);
-  --input: rgba(255,255,255,0.14);
+  --border: rgba(16,36,29,0.14);
+  --input: rgba(16,36,29,0.18);
   --ring: #3C966C;
   --blush: #3C966C;
   --sage: #277560;
-  --taupe: rgba(255,255,255,0.05);
+  --taupe: rgba(16,36,29,0.06);
+  --on-gradient: #ffffff;
+  --on-gradient-muted: rgba(255,255,255,0.78);
 }
 
 @layer base {
@@ -101,45 +103,67 @@
   }
 }
 
+/* Floating glossy bubbles */
+.bubble-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
 .gradient-bubble {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.45;
-  pointer-events: none;
+  filter: blur(60px);
+  will-change: transform;
+  animation: float-bubble 22s ease-in-out infinite;
+}
+
+.gradient-bubble.glossy {
+  filter: blur(0.5px);
+  box-shadow: inset -18px -18px 40px rgba(255,255,255,0.55), inset 14px 14px 40px rgba(0,0,0,0.06), 0 20px 60px rgba(16,36,29,0.08);
+  backdrop-filter: blur(2px);
+}
+
+@keyframes float-bubble {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  33%  { transform: translate3d(40px, -50px, 0) scale(1.08); }
+  66%  { transform: translate3d(-30px, 30px, 0) scale(0.95); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
 .bubble-1 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, #3C966C 0%, #277560 100%);
-  top: -120px;
-  left: -100px;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle at 30% 30%, rgba(60,150,108,0.55) 0%, rgba(39,117,96,0.35) 100%);
+  opacity: 0.5; top: -140px; left: -120px; animation-duration: 26s;
 }
-
 .bubble-2 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, #277560 0%, #3C966C 100%);
-  top: 300px;
-  right: -80px;
+  width: 420px; height: 420px;
+  background: radial-gradient(circle at 35% 25%, rgba(96,190,220,0.45) 0%, rgba(39,117,96,0.3) 100%);
+  opacity: 0.45; top: 22%; right: -100px; animation-duration: 32s; animation-delay: -6s;
 }
-
 .bubble-3 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, #3C966C 0%, #277560 100%);
-  bottom: 200px;
-  left: 10%;
+  width: 360px; height: 360px;
+  background: radial-gradient(circle at 30% 30%, rgba(232,178,215,0.45) 0%, rgba(60,150,108,0.28) 100%);
+  opacity: 0.45; bottom: 18%; left: 6%; animation-duration: 28s; animation-delay: -12s;
+}
+.bubble-4 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle at 30% 30%, rgba(247,214,145,0.5) 0%, rgba(60,150,108,0.28) 100%);
+  opacity: 0.42; bottom: -90px; right: 14%; animation-duration: 24s; animation-delay: -3s;
+}
+.bubble-5 {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle at 30% 28%, rgba(255,255,255,0.85) 0%, rgba(60,150,108,0.28) 60%, rgba(39,117,96,0.35) 100%);
+  opacity: 0.55; top: 12%; left: 42%; animation-duration: 20s; animation-delay: -9s;
+}
+.bubble-6 {
+  width: 120px; height: 120px;
+  background: radial-gradient(circle at 30% 28%, rgba(255,255,255,0.9) 0%, rgba(150,205,235,0.4) 60%, rgba(60,150,108,0.3) 100%);
+  opacity: 0.5; bottom: 26%; right: 28%; animation-duration: 18s; animation-delay: -14s;
 }
 
-.bubble-4 {
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, #277560 0%, #3C966C 100%);
-  bottom: -80px;
-  right: 15%;
-}
 
 @utility bg-theme-gradient {
   background: linear-gradient(180deg, #277560 0%, #3C966C 100%);
