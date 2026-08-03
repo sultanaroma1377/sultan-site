@@ -31,6 +31,8 @@
   --color-blush: var(--blush);
   --color-sage: var(--sage);
   --color-taupe: var(--taupe);
+  --color-on-gradient: var(--on-gradient);
+  --color-on-gradient-muted: var(--on-gradient-muted);
   --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
   --font-sans: "Karla", ui-sans-serif, system-ui, sans-serif;
 }
