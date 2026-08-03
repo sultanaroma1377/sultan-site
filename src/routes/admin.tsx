@@ -209,7 +209,37 @@ function ProductsTab() {
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
           <input type="number" className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Price" value={draft.price || ""} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} />
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Category" value={draft.category ?? ""} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
-          <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Image URL (optional)" value={draft.image ?? ""} onChange={(e) => setDraft({ ...draft, image: e.target.value })} />
+          <div className="rounded-md border p-3 md:col-span-2">
+            <p className="mb-2 text-sm font-medium">Product image</p>
+            <div className="mb-3 flex gap-4 text-sm">
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={!draft.image} onChange={() => setDraft({ ...draft, image: undefined })} />
+                Keep default image
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={!!draft.image} onChange={() => {}} />
+                Upload from device
+              </label>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              className="block w-full text-sm"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => setDraft((d) => ({ ...d, image: reader.result as string }));
+                reader.readAsDataURL(f);
+              }}
+            />
+            {draft.image && (
+              <div className="mt-3 flex items-center gap-3">
+                <img src={draft.image} alt="preview" className="h-24 w-18 rounded-md object-cover" style={{ aspectRatio: "3 / 4", height: "6rem" }} />
+                <Button size="sm" variant="ghost" onClick={() => setDraft({ ...draft, image: undefined })}>Remove / use default</Button>
+              </div>
+            )}
+          </div>
           <textarea className="rounded-md border bg-background px-3 py-2 text-sm md:col-span-2" placeholder="Description" value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
         </div>
         <div className="mt-3 flex gap-2">
