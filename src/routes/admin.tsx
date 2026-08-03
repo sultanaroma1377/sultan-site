@@ -54,6 +54,7 @@ function AdminPage() {
           <TabsList className="flex w-full flex-wrap gap-1 h-auto">
             <TabsTrigger value="site">Site</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="carousel">Carousel</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="cart">Cart</TabsTrigger>
             <TabsTrigger value="coupons">Coupons</TabsTrigger>
@@ -61,6 +62,7 @@ function AdminPage() {
           </TabsList>
           <TabsContent value="site"><SiteTab /></TabsContent>
           <TabsContent value="products"><ProductsTab /></TabsContent>
+          <TabsContent value="carousel"><CarouselTab /></TabsContent>
           <TabsContent value="customers"><CustomersTab /></TabsContent>
           <TabsContent value="cart"><CartTab /></TabsContent>
           <TabsContent value="coupons"><CouponsTab /></TabsContent>
