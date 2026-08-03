@@ -41,29 +41,37 @@ export function addCart(pid: string) {
 }
 
 export function ProductCard({ product }: { product: Product }) {
-  const fav = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(product.id) ?? false);
+  const fav = useStore(
+    (s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(product.id) ?? false,
+  );
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-lg border border-border bg-theme-gradient-reverse shadow-sm transition hover:shadow-lg">
-      <Link to="/product/$id" params={{ id: product.id }} className="relative block aspect-[3/4] overflow-hidden">
-        {product.image ? (
-          <img src={product.image} alt={product.name} className="h-full w-full object-cover transition group-hover:scale-105" />
-        ) : (
-          <div className="grid h-full w-full place-items-center font-serif text-5xl text-on-gradient-muted">
-            {product.name[0]}
-          </div>
-        )}
-      </Link>
-      <button
-        onClick={() => toggleFav(product.id)}
-        className="absolute-none relative -mt-[calc(100%*4/3)] ml-auto mr-2 mt-2 grid h-9 w-9 place-items-center self-end rounded-full bg-white/30 backdrop-blur-md hover:bg-white/45"
-        aria-label="Favorite"
-        style={{ marginTop: "-3rem" }}
-      >
-        <Heart className={`h-4 w-4 text-on-gradient ${fav ? "fill-current" : ""}`} />
-      </button>
+      {/* 4 (height) : 3 (width) */}
+      <div className="relative aspect-[3/4] overflow-hidden">
+        <Link to="/product/$id" params={{ id: product.id }} className="block h-full w-full">
+          {product.image ? (
+            <img src={product.image} alt={product.name} className="h-full w-full object-cover transition group-hover:scale-105" />
+          ) : (
+            <div className="grid h-full w-full place-items-center font-serif text-5xl text-on-gradient-muted">
+              {product.name[0]}
+            </div>
+          )}
+        </Link>
+        <button
+          onClick={() => toggleFav(product.id)}
+          className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-white/30 backdrop-blur-md hover:bg-white/45"
+          aria-label="Favorite"
+        >
+          <Heart className={`h-4 w-4 text-on-gradient ${fav ? "fill-current" : ""}`} />
+        </button>
+      </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <Link to="/product/$id" params={{ id: product.id }} className="font-serif text-lg leading-tight text-on-gradient hover:underline">
+        <Link
+          to="/product/$id"
+          params={{ id: product.id }}
+          className="font-serif text-lg leading-tight text-on-gradient hover:underline"
+        >
           {product.name}
         </Link>
         {product.description && <p className="line-clamp-2 text-xs text-on-gradient-muted">{product.description}</p>}
