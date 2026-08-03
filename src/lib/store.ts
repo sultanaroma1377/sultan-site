@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import type { Admin, ConfirmedOrder, Coupon, Customer, Product, SiteSettings } from "./types";
+import type { Admin, CarouselSlide, ConfirmedOrder, Coupon, Customer, Product, SiteSettings } from "./types";
 
 type State = {
   site: SiteSettings;
@@ -9,6 +9,7 @@ type State = {
   currentCustomerId: string | null;
   coupons: Coupon[];
   orders: ConfirmedOrder[];
+  carousel: CarouselSlide[];
   sheetSync: { apiKey: string; sheetId: string; range: string };
 };
 
