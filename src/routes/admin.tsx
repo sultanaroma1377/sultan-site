@@ -54,6 +54,7 @@ function AdminPage() {
           <TabsList className="flex w-full flex-wrap gap-1 h-auto">
             <TabsTrigger value="site">Site</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="carousel">Carousel</TabsTrigger>
             <TabsTrigger value="customers">Customers</TabsTrigger>
             <TabsTrigger value="cart">Cart</TabsTrigger>
             <TabsTrigger value="coupons">Coupons</TabsTrigger>
@@ -61,6 +62,7 @@ function AdminPage() {
           </TabsList>
           <TabsContent value="site"><SiteTab /></TabsContent>
           <TabsContent value="products"><ProductsTab /></TabsContent>
+          <TabsContent value="carousel"><CarouselTab /></TabsContent>
           <TabsContent value="customers"><CustomersTab /></TabsContent>
           <TabsContent value="cart"><CartTab /></TabsContent>
           <TabsContent value="coupons"><CouponsTab /></TabsContent>
@@ -209,7 +211,37 @@ function ProductsTab() {
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Name" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
           <input type="number" className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Price" value={draft.price || ""} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} />
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Category" value={draft.category ?? ""} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
-          <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Image URL (optional)" value={draft.image ?? ""} onChange={(e) => setDraft({ ...draft, image: e.target.value })} />
+          <div className="rounded-md border p-3 md:col-span-2">
+            <p className="mb-2 text-sm font-medium">Product image</p>
+            <div className="mb-3 flex gap-4 text-sm">
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={!draft.image} onChange={() => setDraft({ ...draft, image: undefined })} />
+                Keep default image
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={!!draft.image} onChange={() => {}} />
+                Upload from device
+              </label>
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              className="block w-full text-sm"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => setDraft((d) => ({ ...d, image: reader.result as string }));
+                reader.readAsDataURL(f);
+              }}
+            />
+            {draft.image && (
+              <div className="mt-3 flex items-center gap-3">
+                <img src={draft.image} alt="preview" className="h-24 w-18 rounded-md object-cover" style={{ aspectRatio: "3 / 4", height: "6rem" }} />
+                <Button size="sm" variant="ghost" onClick={() => setDraft({ ...draft, image: undefined })}>Remove / use default</Button>
+              </div>
+            )}
+          </div>
           <textarea className="rounded-md border bg-background px-3 py-2 text-sm md:col-span-2" placeholder="Description" value={draft.description ?? ""} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
         </div>
         <div className="mt-3 flex gap-2">
@@ -247,6 +279,98 @@ function ProductsTab() {
     </div>
   );
 }
+
+function CarouselTab() {
+  const slides = useStore((s) => s.carousel);
+  const products = useStore((s) => s.products);
+  const [image, setImage] = useState<string | undefined>();
+  const [productId, setProductId] = useState("");
+  const [caption, setCaption] = useState("");
+
+  const add = () => {
+    if (!image && !productId) { toast.error("Upload an image or select a product"); return; }
+    store.set((s) => ({
+      ...s,
+      carousel: [...s.carousel, { id: Math.random().toString(36).slice(2, 10), image, productId: productId || undefined, caption: caption || undefined }],
+    }));
+    setImage(undefined);
+    setProductId("");
+    setCaption("");
+    toast.success("Slide added");
+  };
+
+  return (
+    <div className="mt-6 space-y-6">
+      <Card title="Add carousel slide">
+        <p className="mb-3 text-sm text-muted-foreground">
+          Upload an image from your device and/or link a product. Linked slides open that product's details page when clicked.
+        </p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="text-sm">Image (upload from device)
+            <input
+              type="file"
+              accept="image/*"
+              className="mt-1 block w-full text-sm"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => setImage(reader.result as string);
+                reader.readAsDataURL(f);
+              }}
+            />
+          </label>
+          <label className="text-sm">Link a product (optional)
+            <select className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={productId} onChange={(e) => setProductId(e.target.value)}>
+              <option value="">— none —</option>
+              {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </label>
+          <label className="text-sm md:col-span-2">Caption (optional)
+            <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={caption} onChange={(e) => setCaption(e.target.value)} />
+          </label>
+        </div>
+        {image && <img src={image} alt="preview" className="mt-3 h-28 w-full max-w-sm rounded-md object-cover" />}
+        <Button className="mt-3" onClick={add}>Add slide</Button>
+      </Card>
+
+      <Card title={`Slides (${slides.length})`}>
+        {slides.length === 0 && <p className="text-sm text-muted-foreground">No slides yet.</p>}
+        <div className="space-y-2">
+          {slides.map((sl, idx) => {
+            const p = products.find((x) => x.id === sl.productId);
+            const img = sl.image ?? p?.image;
+            return (
+              <div key={sl.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                <div className="flex items-center gap-3">
+                  {img ? <img src={img} alt="" className="h-12 w-20 rounded object-cover" /> : <div className="grid h-12 w-20 place-items-center rounded bg-secondary text-xs">No image</div>}
+                  <div className="text-sm">
+                    <div className="font-medium">{sl.caption ?? p?.name ?? "Slide"}</div>
+                    <div className="text-muted-foreground">{p ? `Links to ${p.name}` : "Image only"}</div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" disabled={idx === 0} onClick={() => store.set((s) => {
+                    const c = [...s.carousel];
+                    [c[idx - 1], c[idx]] = [c[idx]!, c[idx - 1]!];
+                    return { ...s, carousel: c };
+                  })}>↑</Button>
+                  <Button size="sm" variant="outline" disabled={idx === slides.length - 1} onClick={() => store.set((s) => {
+                    const c = [...s.carousel];
+                    [c[idx + 1], c[idx]] = [c[idx]!, c[idx + 1]!];
+                    return { ...s, carousel: c };
+                  })}>↓</Button>
+                  <Button size="sm" variant="destructive" onClick={() => store.set((s) => ({ ...s, carousel: s.carousel.filter((x) => x.id !== sl.id) }))}>Delete</Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 
 function CustomersTab() {
   const customers = useStore((s) => s.customers);

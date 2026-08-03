@@ -45,6 +45,13 @@ export type ConfirmedOrder = {
 
 export type Admin = { username: string; password: string };
 
+export type CarouselSlide = {
+  id: string;
+  image?: string; // dataURL or url
+  productId?: string; // if set, clicking opens product details
+  caption?: string;
+};
+
 export type SiteSettings = {
   name: string;
   logo?: string; // dataURL
