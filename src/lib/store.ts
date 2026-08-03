@@ -40,6 +40,7 @@ const defaultState: State = {
   currentCustomerId: null,
   coupons: [],
   orders: [],
+  carousel: [],
   sheetSync: { apiKey: "", sheetId: "", range: "Sheet1!A2:E" },
 };
 
