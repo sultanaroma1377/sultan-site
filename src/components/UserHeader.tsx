@@ -74,7 +74,8 @@ function AccountSheet() {
 
         {mode === "menu" && (
           <div className="mt-6 space-y-2 px-4">
-            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Shop</Link>
+            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Home</Link>
+            <Link to="/products" search={{ q: "" }} onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Shop</Link>
             <Link to="/favorites" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Favorites</Link>
             <Link to="/cart" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Cart</Link>
             <Link to="/admin" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Admin</Link>
