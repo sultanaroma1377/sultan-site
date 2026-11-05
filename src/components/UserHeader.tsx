@@ -130,7 +130,7 @@ function AccountSheet() {
             <input className="w-full rounded-md border bg-background px-3 py-2" placeholder="Username" value={u} onChange={(e) => setU(e.target.value)} required />
             <input className="w-full rounded-md border bg-background px-3 py-2" type="password" placeholder="Password" value={p} onChange={(e) => setP(e.target.value)} required />
             {err && <p className="text-sm text-destructive">{err}</p>}
-            <Button type="submit" className="w-full">{mode === "login" ? "Login" : "Sign up"}</Button>
+            <Button type="submit" className="w-full bg-white text-primary hover:bg-white/90">{mode === "login" ? "Login" : "Sign up"}</Button>
             <button type="button" onClick={() => setMode("menu")} className="block w-full text-sm text-muted-foreground hover:underline">Back</button>
           </form>
         )}
@@ -201,7 +201,7 @@ function AccountDetails({ customerId, onBack }: { customerId: string; onBack: ()
               <div>{a.line1}</div>
               <div className="text-muted-foreground">{a.city}, {a.state} - {a.pincode}</div>
             </div>
-            <button className="text-sm text-primary hover:underline" onClick={() => startEdit(a.id)}>Edit</button>
+            <button className="text-sm text-white underline-offset-2 hover:underline" onClick={() => startEdit(a.id)}>Edit</button>
           </div>
         ))}
         {customer.addresses.length === 0 && <p className="text-sm text-muted-foreground">No addresses yet.</p>}
