@@ -10,9 +10,9 @@ export const Route = createFileRoute("/")({
   component: Storefront,
   head: () => ({
     meta: [
-      { title: "Maison Fleur — Hand-blended luxury perfumes" },
+      { title: "SULTAN AL MISK — Hand-blended luxury perfumes" },
       { name: "description", content: "Discover hand-blended perfumes inspired by gardens in bloom. Floral, woody and oriental fragrances." },
-      { property: "og:title", content: "Maison Fleur — Hand-blended luxury perfumes" },
+      { property: "og:title", content: "SULTAN AL MISK — Hand-blended luxury perfumes" },
       { property: "og:description", content: "Discover hand-blended perfumes inspired by gardens in bloom." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

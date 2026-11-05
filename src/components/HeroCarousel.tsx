@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 export function HeroCarousel() {
   const slides = useStore((s) => s.carousel);
   const products = useStore((s) => s.products);
+  const commonImg = useStore((s) => s.commonProductImage);
   const [i, setI] = useState(0);
 
   const items = slides
@@ -13,7 +14,7 @@ export function HeroCarousel() {
       const p = sl.productId ? products.find((x) => x.id === sl.productId) : undefined;
       return {
         id: sl.id,
-        image: sl.image ?? p?.image,
+        image: sl.image ?? p?.image ?? (p ? commonImg : undefined),
         caption: sl.caption ?? p?.name,
         productId: p?.id,
       };

@@ -9,10 +9,10 @@ export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
   head: () => ({
     meta: [
-      { title: "Perfume details — Maison Fleur" },
-      { name: "description", content: "Notes, price and availability for this hand-blended Maison Fleur perfume." },
-      { property: "og:title", content: "Perfume details — Maison Fleur" },
-      { property: "og:description", content: "Notes, price and availability for this hand-blended Maison Fleur perfume." },
+      { title: "Perfume details — SULTAN AL MISK" },
+      { name: "description", content: "Notes, price and availability for this hand-blended SULTAN AL MISK perfume." },
+      { property: "og:title", content: "Perfume details — SULTAN AL MISK" },
+      { property: "og:description", content: "Notes, price and availability for this hand-blended SULTAN AL MISK perfume." },
       { property: "og:type", content: "product" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -23,6 +23,7 @@ function ProductPage() {
   const { id } = Route.useParams();
   const product = useStore((s) => s.products.find((p) => p.id === id) ?? null);
   const fav = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(id) ?? false);
+  const commonImg = useStore((s) => s.commonProductImage);
 
   return (
     <div className="relative min-h-screen">
@@ -39,8 +40,8 @@ function ProductPage() {
           <div className="grid gap-8 md:grid-cols-2">
             <div className="overflow-hidden rounded-2xl border border-border bg-theme-gradient-reverse">
               <div className="aspect-[3/4] w-full">
-                {product.image ? (
-                  <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+                {(product.image ?? commonImg) ? (
+                  <img src={product.image ?? commonImg} alt={product.name} className="h-full w-full object-cover" />
                 ) : (
                   <div className="grid h-full w-full place-items-center font-serif text-7xl text-on-gradient-muted">
                     {product.name[0]}

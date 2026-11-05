@@ -11,10 +11,10 @@ export const Route = createFileRoute("/products")({
   component: ProductsPage,
   head: () => ({
     meta: [
-      { title: "Shop all perfumes — Maison Fleur" },
-      { name: "description", content: "Browse the full Maison Fleur collection of hand-blended floral, woody, citrus and oriental perfumes." },
-      { property: "og:title", content: "Shop all perfumes — Maison Fleur" },
-      { property: "og:description", content: "Browse the full Maison Fleur collection of hand-blended perfumes." },
+      { title: "Shop all perfumes — SULTAN AL MISK" },
+      { name: "description", content: "Browse the full SULTAN AL MISK collection of hand-blended floral, woody, citrus and oriental perfumes." },
+      { property: "og:title", content: "Shop all perfumes — SULTAN AL MISK" },
+      { property: "og:description", content: "Browse the full SULTAN AL MISK collection of hand-blended perfumes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

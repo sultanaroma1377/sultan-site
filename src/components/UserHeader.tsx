@@ -27,7 +27,7 @@ export function UserHeader() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-secondary">
+          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/15">
             <ShoppingBag className="h-5 w-5" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
@@ -61,11 +61,11 @@ function AccountSheet() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-secondary" aria-label="Menu">
+        <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/15" aria-label="Menu">
           <Menu className="h-5 w-5" />
         </button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md">
+      <SheetContent className="w-full border-none bg-theme-gradient text-white sm:max-w-md [&_.text-muted-foreground]:text-white/75 [&_input]:bg-white/10 [&_input]:text-white [&_input]:placeholder:text-white/60 [&_input]:border-white/30">
         <SheetHeader>
           <SheetTitle className="font-serif text-2xl">
             {current ? `Hello, ${current.username}` : "Welcome"}
@@ -74,29 +74,29 @@ function AccountSheet() {
 
         {mode === "menu" && (
           <div className="mt-6 space-y-2 px-4">
-            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Home</Link>
-            <Link to="/products" search={{ q: "" }} onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Shop</Link>
-            <Link to="/favorites" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Favorites</Link>
-            <Link to="/cart" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Cart</Link>
-            <Link to="/admin" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Admin</Link>
+            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Home</Link>
+            <Link to="/products" search={{ q: "" }} onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Shop</Link>
+            <Link to="/favorites" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Favorites</Link>
+            <Link to="/cart" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Cart</Link>
+            <Link to="/admin" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Admin</Link>
             <div className="my-3 h-px bg-border" />
             {current ? (
               <>
-                <button onClick={() => setMode("account")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary">Account details</button>
+                <button onClick={() => setMode("account")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Account details</button>
                 <button
                   onClick={() => {
                     store.set((s) => ({ ...s, currentCustomerId: null }));
                     close();
                   }}
-                  className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary"
+                  className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <button onClick={() => setMode("login")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary">Login</button>
-                <button onClick={() => setMode("signup")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary">Create account</button>
+                <button onClick={() => setMode("login")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Login</button>
+                <button onClick={() => setMode("signup")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Create account</button>
               </>
             )}
           </div>
@@ -130,13 +130,13 @@ function AccountSheet() {
             <input className="w-full rounded-md border bg-background px-3 py-2" placeholder="Username" value={u} onChange={(e) => setU(e.target.value)} required />
             <input className="w-full rounded-md border bg-background px-3 py-2" type="password" placeholder="Password" value={p} onChange={(e) => setP(e.target.value)} required />
             {err && <p className="text-sm text-destructive">{err}</p>}
-            <Button type="submit" className="w-full">{mode === "login" ? "Login" : "Sign up"}</Button>
+            <Button type="submit" className="w-full bg-white text-primary hover:bg-white/90">{mode === "login" ? "Login" : "Sign up"}</Button>
             <button type="button" onClick={() => setMode("menu")} className="block w-full text-sm text-muted-foreground hover:underline">Back</button>
           </form>
         )}
 
         {mode === "account" && current && <AccountDetails customerId={current.id} onBack={() => setMode("menu")} />}
-        <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 hover:bg-secondary" aria-label="Close">
+        <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 hover:bg-white/15" aria-label="Close">
           <X className="h-4 w-4" />
         </button>
       </SheetContent>
@@ -201,7 +201,7 @@ function AccountDetails({ customerId, onBack }: { customerId: string; onBack: ()
               <div>{a.line1}</div>
               <div className="text-muted-foreground">{a.city}, {a.state} - {a.pincode}</div>
             </div>
-            <button className="text-sm text-primary hover:underline" onClick={() => startEdit(a.id)}>Edit</button>
+            <button className="text-sm text-white underline-offset-2 hover:underline" onClick={() => startEdit(a.id)}>Edit</button>
           </div>
         ))}
         {customer.addresses.length === 0 && <p className="text-sm text-muted-foreground">No addresses yet.</p>}
@@ -214,12 +214,12 @@ function AccountDetails({ customerId, onBack }: { customerId: string; onBack: ()
           <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="State" value={draft.state} onChange={(e) => setDraft({ ...draft, state: e.target.value })} />
           <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="City" value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} />
           <div className="flex gap-2">
-            <Button size="sm" onClick={save}>Save</Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={save}>Save</Button>
+            <Button size="sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={() => setEditing(null)}>Cancel</Button>
           </div>
         </div>
       ) : (
-        <Button variant="outline" onClick={startNew} className="w-full">+ Add address</Button>
+        <Button variant="outline" onClick={startNew} className="w-full border-white/40 bg-transparent text-white hover:bg-white/15 hover:text-white">+ Add address</Button>
       )}
     </div>
   );
