@@ -214,12 +214,12 @@ function AccountDetails({ customerId, onBack }: { customerId: string; onBack: ()
           <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="State" value={draft.state} onChange={(e) => setDraft({ ...draft, state: e.target.value })} />
           <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="City" value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} />
           <div className="flex gap-2">
-            <Button size="sm" onClick={save}>Save</Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={save}>Save</Button>
+            <Button size="sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={() => setEditing(null)}>Cancel</Button>
           </div>
         </div>
       ) : (
-        <Button variant="outline" onClick={startNew} className="w-full">+ Add address</Button>
+        <Button variant="outline" onClick={startNew} className="w-full border-white/40 bg-transparent text-white hover:bg-white/15 hover:text-white">+ Add address</Button>
       )}
     </div>
   );
