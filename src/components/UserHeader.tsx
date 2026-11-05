@@ -27,7 +27,7 @@ export function UserHeader() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-secondary">
+          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/15">
             <ShoppingBag className="h-5 w-5" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
@@ -61,11 +61,11 @@ function AccountSheet() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-secondary" aria-label="Menu">
+        <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/15" aria-label="Menu">
           <Menu className="h-5 w-5" />
         </button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md">
+      <SheetContent className="w-full border-none bg-theme-gradient text-white sm:max-w-md [&_.text-muted-foreground]:text-white/75 [&_input]:bg-white/10 [&_input]:text-white [&_input]:placeholder:text-white/60 [&_input]:border-white/30">
         <SheetHeader>
           <SheetTitle className="font-serif text-2xl">
             {current ? `Hello, ${current.username}` : "Welcome"}
@@ -74,29 +74,29 @@ function AccountSheet() {
 
         {mode === "menu" && (
           <div className="mt-6 space-y-2 px-4">
-            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Home</Link>
-            <Link to="/products" search={{ q: "" }} onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Shop</Link>
-            <Link to="/favorites" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Favorites</Link>
-            <Link to="/cart" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Cart</Link>
-            <Link to="/admin" onClick={close} className="block rounded-md px-3 py-2 hover:bg-secondary">Admin</Link>
+            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Home</Link>
+            <Link to="/products" search={{ q: "" }} onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Shop</Link>
+            <Link to="/favorites" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Favorites</Link>
+            <Link to="/cart" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Cart</Link>
+            <Link to="/admin" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Admin</Link>
             <div className="my-3 h-px bg-border" />
             {current ? (
               <>
-                <button onClick={() => setMode("account")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary">Account details</button>
+                <button onClick={() => setMode("account")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Account details</button>
                 <button
                   onClick={() => {
                     store.set((s) => ({ ...s, currentCustomerId: null }));
                     close();
                   }}
-                  className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary"
+                  className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <button onClick={() => setMode("login")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary">Login</button>
-                <button onClick={() => setMode("signup")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-secondary">Create account</button>
+                <button onClick={() => setMode("login")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Login</button>
+                <button onClick={() => setMode("signup")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Create account</button>
               </>
             )}
           </div>
@@ -136,7 +136,7 @@ function AccountSheet() {
         )}
 
         {mode === "account" && current && <AccountDetails customerId={current.id} onBack={() => setMode("menu")} />}
-        <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 hover:bg-secondary" aria-label="Close">
+        <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 hover:bg-white/15" aria-label="Close">
           <X className="h-4 w-4" />
         </button>
       </SheetContent>

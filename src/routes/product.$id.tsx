@@ -23,6 +23,7 @@ function ProductPage() {
   const { id } = Route.useParams();
   const product = useStore((s) => s.products.find((p) => p.id === id) ?? null);
   const fav = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(id) ?? false);
+  const commonImg = useStore((s) => s.commonProductImage);
 
   return (
     <div className="relative min-h-screen">

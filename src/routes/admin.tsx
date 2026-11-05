@@ -156,6 +156,7 @@ function SiteTab() {
 function ProductsTab() {
   const products = useStore((s) => s.products);
   const sheetSync = useStore((s) => s.sheetSync);
+  const commonImg = useStore((s) => s.commonProductImage);
   const [draft, setDraft] = useState<Omit<Product, "id">>({ name: "", price: 0, description: "", category: "" });
   const [editing, setEditing] = useState<string | null>(null);
   const [sync, setSync] = useState(sheetSync);
@@ -182,21 +183,37 @@ function ProductsTab() {
     setSyncing(true);
     try {
       store.set((s) => ({ ...s, sheetSync: sync }));
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sync.sheetId}/values/${sync.range}?key=${sync.apiKey}`;
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sync.sheetId}/values/${encodeURIComponent(sync.range || "A1:AA1000")}?key=${sync.apiKey}`;
       const r = await fetch(url);
       const j = await r.json();
       if (!j.values) throw new Error(j.error?.message ?? "No values");
-      // Expected columns: name, price, description, category, image
-      const rows: Product[] = j.values.map((row: string[]) => ({
-        id: Math.random().toString(36).slice(2, 10),
-        name: row[0] ?? "",
-        price: Number(row[1] ?? 0),
-        description: row[2] ?? "",
-        category: row[3] ?? "",
-        image: row[4] ?? undefined,
-      })).filter((p: Product) => p.name);
-      store.set((s) => ({ ...s, products: rows }));
-      toast.success(`Synced ${rows.length} products`);
+      // Mapping (same as Push My Code): row 1 = size labels over 4-col blocks starting E,I,M,Q,U;
+      // data from row 3; A = id, B = base name; block: total cost, ml cost, price, profit;
+      // Y/Z/AA = individual product name / cost / price.
+      const all: string[][] = j.values;
+      if (all.length < 3) throw new Error("No data rows (data starts at row 3)");
+      const header = all[0] || [];
+      const skuPrefix = (l: string) => { const n = (l || "").toLowerCase().replace(/\s+/g, ""); const m = n.match(/(\d+)ml/); return m ? `${m[1]}m` : n.replace(/[^a-z0-9]/g, "") || "x"; };
+      const blocks = [4, 8, 12, 16, 20].map((c) => ({ c, label: (header[c] || "").toString().trim() })).filter((b) => b.label);
+      const rows: Product[] = [];
+      for (const row of all.slice(2)) {
+        const rid = row[0]?.toString().trim();
+        const base = row[1]?.toString().trim();
+        if (!base) continue;
+        for (const b of blocks) {
+          rows.push({ id: `${skuPrefix(b.label)}${rid}`, name: `${base} ${b.label}`, price: parseFloat(row[b.c + 2]) || 0, category: "Perfume" });
+        }
+        const idv = row[24]?.toString().trim();
+        if (idv) rows.push({ id: `idv${rid}`, name: idv, price: parseFloat(row[26]) || 0, category: "Accessory" });
+      }
+      if (!rows.length) throw new Error("No products could be parsed");
+      let created = 0, updated = 0;
+      store.set((s) => {
+        const map = new Map(s.products.map((p) => [p.id, p]));
+        for (const r of rows) { const ex = map.get(r.id); if (ex) { updated++; map.set(r.id, { ...ex, name: r.name, price: r.price, category: r.category }); } else { created++; map.set(r.id, r); } }
+        return { ...s, products: [...map.values()] };
+      });
+      toast.success(`Synced: ${created} new, ${updated} updated`);
     } catch (e: any) {
       toast.error("Sync failed: " + e.message);
     } finally {
@@ -250,12 +267,24 @@ function ProductsTab() {
         </div>
       </Card>
 
+      <Card title="Common product image">
+        <p className="mb-3 text-sm text-muted-foreground">Shown on every product that has no image of its own (including synced products).</p>
+        <div className="flex flex-wrap items-center gap-4">
+          {commonImg ? <img src={commonImg} alt="Common" className="rounded-md object-cover" style={{ aspectRatio: "3 / 4", height: "8rem" }} /> : <div className="grid place-items-center rounded-md border text-xs text-muted-foreground" style={{ aspectRatio: "3 / 4", height: "8rem" }}>No image</div>}
+          <label className="cursor-pointer rounded-md border px-3 py-2 text-sm hover:bg-secondary">
+            {commonImg ? "Change image" : "Upload image"}
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => { store.set((s) => ({ ...s, commonProductImage: r.result as string })); toast.success("Common image saved"); }; r.readAsDataURL(f); e.target.value = ""; }} />
+          </label>
+          {commonImg && <Button size="sm" variant="destructive" onClick={() => store.set((s) => ({ ...s, commonProductImage: undefined }))}>Delete</Button>}
+        </div>
+      </Card>
+
       <Card title="Sync from Google Sheets">
-        <p className="mb-3 text-sm text-muted-foreground">Columns: name, price, description, category, image. Replaces all products.</p>
+        <p className="mb-3 text-sm text-muted-foreground">Row 1: size labels (e.g. 3ml, 6ml) above columns E, I, M, Q, U. Data from row 3: A = id, B = name, each size block = total cost, ml cost, price, profit. Y/Z/AA = individual item name, cost, price. Existing products are updated, new ones added.</p>
         <div className="grid gap-3 md:grid-cols-3">
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Google API Key" value={sync.apiKey} onChange={(e) => setSync({ ...sync, apiKey: e.target.value })} />
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Sheet ID" value={sync.sheetId} onChange={(e) => setSync({ ...sync, sheetId: e.target.value })} />
-          <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Range e.g. Sheet1!A2:E" value={sync.range} onChange={(e) => setSync({ ...sync, range: e.target.value })} />
+          <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Range e.g. A1:AA1000" value={sync.range} onChange={(e) => setSync({ ...sync, range: e.target.value })} />
         </div>
         <Button className="mt-3" onClick={syncSheets} disabled={syncing}>{syncing ? "Syncing…" : "Sync now"}</Button>
       </Card>

@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 export function HeroCarousel() {
   const slides = useStore((s) => s.carousel);
   const products = useStore((s) => s.products);
+  const commonImg = useStore((s) => s.commonProductImage);
   const [i, setI] = useState(0);
 
   const items = slides
