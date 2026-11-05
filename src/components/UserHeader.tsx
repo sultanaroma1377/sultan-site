@@ -23,7 +23,7 @@ export function UserHeader() {
               {site.name?.[0] ?? "M"}
             </span>
           )}
-          <span className="font-serif text-2xl tracking-wide">{site.name}</span>
+          <span className="font-brand text-2xl tracking-wide">{site.name}</span>
         </Link>
 
         <div className="flex items-center gap-2">
