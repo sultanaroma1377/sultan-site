@@ -49,7 +49,7 @@ function Storefront() {
       <section>
         <div className="mx-auto max-w-5xl px-6 py-16 text-center">
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-muted-foreground">New Season</p>
-          <h1 className="font-serif text-5xl leading-tight md:text-7xl">{site.name}</h1>
+          <h1 className="font-brand text-5xl leading-tight md:text-7xl">{site.name}</h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground md:text-lg">{site.tagline}</p>
         </div>
       </section>

@@ -7,7 +7,7 @@ export function UserFooter() {
     <footer className="mt-24 border-t border-white/10 bg-white/10 backdrop-blur-md">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3 md:px-6">
         <div>
-          <h3 className="font-serif text-2xl">{site.name}</h3>
+          <h3 className="font-brand text-2xl">{site.name}</h3>
           <p className="mt-2 text-sm text-muted-foreground">{site.tagline}</p>
         </div>
         <div>
