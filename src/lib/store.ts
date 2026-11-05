@@ -11,6 +11,7 @@ type State = {
   orders: ConfirmedOrder[];
   carousel: CarouselSlide[];
   sheetSync: { apiKey: string; sheetId: string; range: string };
+  commonProductImage?: string;
 };
 
 const KEY = "perfume_app_v1";
@@ -26,7 +27,7 @@ const defaultProducts: Product[] = [
 
 const defaultState: State = {
   site: {
-    name: "Maison Fleur",
+    name: "SULTAN AL MISK",
     tagline: "Hand-blended perfumes inspired by gardens in bloom.",
     social: { instagram: "#", facebook: "#", twitter: "#" },
     website: "#",
@@ -41,7 +42,8 @@ const defaultState: State = {
   coupons: [],
   orders: [],
   carousel: [],
-  sheetSync: { apiKey: "", sheetId: "", range: "Sheet1!A2:E" },
+  sheetSync: { apiKey: "", sheetId: "", range: "A1:AA1000" },
+  commonProductImage: undefined,
 };
 
 let state: State = load();
@@ -52,7 +54,9 @@ function load(): State {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultState;
-    return { ...defaultState, ...JSON.parse(raw) };
+    const parsed = { ...defaultState, ...JSON.parse(raw) };
+    if (parsed.site?.name === "Maison Fleur") parsed.site = { ...parsed.site, name: "SULTAN AL MISK" };
+    return parsed;
   } catch {
     return defaultState;
   }

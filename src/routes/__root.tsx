@@ -84,9 +84,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Maison Fleur — Hand-blended perfumes" },
+      { title: "SULTAN AL MISK — Hand-blended perfumes" },
       { name: "description", content: "Hand-blended perfumes inspired by gardens in bloom." },
-      { property: "og:title", content: "Maison Fleur" },
+      { property: "og:title", content: "SULTAN AL MISK" },
       { property: "og:description", content: "Hand-blended perfumes inspired by gardens in bloom." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

@@ -13,7 +13,7 @@ export function HeroCarousel() {
       const p = sl.productId ? products.find((x) => x.id === sl.productId) : undefined;
       return {
         id: sl.id,
-        image: sl.image ?? p?.image,
+        image: sl.image ?? p?.image ?? (p ? commonImg : undefined),
         caption: sl.caption ?? p?.name,
         productId: p?.id,
       };
