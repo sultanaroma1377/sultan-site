@@ -45,7 +45,7 @@ function AdminPage() {
     <div className="min-h-screen bg-secondary/20">
       <header className="border-b bg-background px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="font-brand text-2xl">{site.name}</h1>
+          <h1 className="font-serif text-2xl">Admin Panel</h1>
           <Button variant="outline" size="sm" onClick={() => setAuthed(false)}>Logout</Button>
         </div>
       </header>
