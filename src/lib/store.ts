@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { Admin, CarouselSlide, ConfirmedOrder, Coupon, Customer, Product, SiteSettings } from "./types";
+import type { EcoVariant, SheetMode } from "./sheet-mapping";
 
 type State = {
   site: SiteSettings;
@@ -10,7 +11,7 @@ type State = {
   coupons: Coupon[];
   orders: ConfirmedOrder[];
   carousel: CarouselSlide[];
-  sheetSync: { apiKey: string; sheetId: string; range: string };
+  sheetSync: { apiKey: string; sheetId: string; range: string; mode?: SheetMode; variants?: EcoVariant[] };
   commonProductImage?: string;
 };
 
