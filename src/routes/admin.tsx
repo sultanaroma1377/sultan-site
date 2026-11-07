@@ -6,9 +6,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import type { Product, ConfirmedOrder } from "@/lib/types";
+import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
+  head: () => ({ meta: [
+    { title: "Manage products — SULTAN AL MISK" },
+    { name: "description", content: "Manage SULTAN AL MISK products, sheet imports and orders." },
+    { property: "og:title", content: "Manage products — SULTAN AL MISK" },
+    { property: "og:description", content: "Manage SULTAN AL MISK products, sheet imports and orders." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
 });
 
 function AdminPage() {
@@ -161,6 +170,9 @@ function ProductsTab() {
   const [editing, setEditing] = useState<string | null>(null);
   const [sync, setSync] = useState(sheetSync);
   const [syncing, setSyncing] = useState(false);
+  const mode = sync.mode ?? "sheet";
+  const variants = sync.variants ?? [];
+  const updateVariant = (index: number, patch: Partial<EcoVariant>) => setSync(s => ({ ...s, variants: (s.variants ?? []).map((v, i) => i === index ? { ...v, ...patch } : v) }));
 
   const save = () => {
     if (!draft.name) return;
@@ -185,37 +197,20 @@ function ProductsTab() {
       store.set((s) => ({ ...s, sheetSync: sync }));
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sync.sheetId}/values/${encodeURIComponent(sync.range || "A1:AA1000")}?key=${sync.apiKey}`;
       const r = await fetch(url);
+      if (!r.ok) throw new Error(`Google Sheets [${r.status}]: ${await r.text()}`);
       const j = await r.json();
       if (!j.values) throw new Error(j.error?.message ?? "No values");
-      // Mapping (same as Push My Code): row 1 = size labels over 4-col blocks starting E,I,M,Q,U;
-      // data from row 3; A = id, B = base name; block: total cost, ml cost, price, profit;
-      // Y/Z/AA = individual product name / cost / price.
-      const all: string[][] = j.values;
-      if (all.length < 3) throw new Error("No data rows (data starts at row 3)");
-      const header = all[0] || [];
-      const skuPrefix = (l: string) => { const n = (l || "").toLowerCase().replace(/\s+/g, ""); const m = n.match(/(\d+)ml/); return m ? `${m[1]}m` : n.replace(/[^a-z0-9]/g, "") || "x"; };
-      const blocks = [4, 8, 12, 16, 20].map((c) => ({ c, label: (header[c] || "").toString().trim() })).filter((b) => b.label);
-      const rows: Product[] = [];
-      for (const row of all.slice(2)) {
-        const rid = row[0]?.toString().trim();
-        const base = row[1]?.toString().trim();
-        if (!base) continue;
-        for (const b of blocks) {
-          rows.push({ id: `${skuPrefix(b.label)}${rid}`, name: `${base} ${b.label}`, price: parseFloat(row[b.c + 2]) || 0, category: "Perfume" });
-        }
-        const idv = row[24]?.toString().trim();
-        if (idv) rows.push({ id: `idv${rid}`, name: idv, price: parseFloat(row[26]) || 0, category: "Accessory" });
-      }
+      const rows = mapSheetProducts(j.values, mode, variants);
       if (!rows.length) throw new Error("No products could be parsed");
       let created = 0, updated = 0;
       store.set((s) => {
-        const map = new Map(s.products.map((p) => [p.id, p]));
-        for (const r of rows) { const ex = map.get(r.id); if (ex) { updated++; map.set(r.id, { ...ex, name: r.name, price: r.price, category: r.category }); } else { created++; map.set(r.id, r); } }
-        return { ...s, products: [...map.values()] };
+        const result = mergeSheetProducts(s.products, rows);
+        created = result.created; updated = result.updated;
+        return { ...s, products: result.products };
       });
       toast.success(`Synced: ${created} new, ${updated} updated`);
-    } catch (e: any) {
-      toast.error("Sync failed: " + e.message);
+    } catch (e: unknown) {
+      toast.error("Sync failed: " + (e instanceof Error ? e.message : "Unknown error"));
     } finally {
       setSyncing(false);
     }
@@ -280,13 +275,27 @@ function ProductsTab() {
       </Card>
 
       <Card title="Sync from Google Sheets">
-        <p className="mb-3 text-sm text-muted-foreground">Row 1: size labels (e.g. 3ml, 6ml) above columns E, I, M, Q, U. Data from row 3: A = id, B = name, each size block = total cost, ml cost, price, profit. Y/Z/AA = individual item name, cost, price. Existing products are updated, new ones added.</p>
+        <div className="mb-4 flex flex-wrap gap-6">
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={mode === "sheet"} onChange={() => setSync(s => ({ ...s, mode: "sheet" }))} />G Sheet System</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={mode === "eco"} onChange={() => setSync(s => ({ ...s, mode: "eco" }))} />Eco System</label>
+        </div>
+        {mode === "eco" && <div className="mb-4 space-y-3">
+          <div className="text-sm font-medium">Eco sizes</div>
+          {variants.map((v, i) => <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+            <label className="text-xs">Size label<input aria-label={`Size label ${i + 1}`} className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={v.label} onChange={e => updateVariant(i, { label: e.target.value })} /></label>
+            <label className="text-xs">Oil volume (ml)<input aria-label={`Oil volume ${i + 1}`} type="number" min="0.01" step="any" className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={v.oilMl || ""} onChange={e => updateVariant(i, { oilMl: Number(e.target.value) })} /></label>
+            <label className="text-xs">Packaging cost (₹)<input aria-label={`Packaging cost ${i + 1}`} type="number" min="0" step="any" className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={v.packagingCost} onChange={e => updateVariant(i, { packagingCost: Number(e.target.value) })} /></label>
+            <Button variant="ghost" className="self-end" onClick={() => setSync(s => ({ ...s, variants: (s.variants ?? []).filter((_, n) => n !== i) }))}>Remove</Button>
+          </div>)}
+          <Button variant="outline" onClick={() => setSync(s => ({ ...s, variants: [...(s.variants ?? []), { label: "", oilMl: 0, packagingCost: 0 }] }))}>Add size</Button>
+        </div>}
         <div className="grid gap-3 md:grid-cols-3">
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Google API Key" value={sync.apiKey} onChange={(e) => setSync({ ...sync, apiKey: e.target.value })} />
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Sheet ID" value={sync.sheetId} onChange={(e) => setSync({ ...sync, sheetId: e.target.value })} />
           <input className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Range e.g. A1:AA1000" value={sync.range} onChange={(e) => setSync({ ...sync, range: e.target.value })} />
         </div>
         <Button className="mt-3" onClick={syncSheets} disabled={syncing}>{syncing ? "Syncing…" : "Sync now"}</Button>
+        <Button className="mt-3 ml-2" variant="outline" onClick={() => { store.set(s => ({ ...s, sheetSync: sync })); toast.success("Sheet settings saved"); }}>Save settings</Button>
       </Card>
 
       <Card title={`Products (${products.length})`}>
