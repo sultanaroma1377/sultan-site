@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { store, useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -370,7 +370,10 @@ function CarouselTab() {
           <label className="text-sm">Link a product (optional)
             <select className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={productId} onChange={(e) => setProductId(e.target.value)}>
               <option value="">— none —</option>
-              {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {productGroups(products).map(group => {
+                const p = group[0];
+                return p ? <option key={p.id} value={p.id}>{p.baseName ?? p.name}</option> : null;
+              })}
             </select>
           </label>
           <label className="text-sm md:col-span-2">Caption (optional)

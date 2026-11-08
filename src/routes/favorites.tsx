@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
-import { store, useStore } from "@/lib/store";
-import { Heart, ShoppingBag } from "lucide-react";
+import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
 
@@ -37,25 +36,6 @@ function FavoritesPage() {
   }
 
   const favs = products.filter((p) => current.favorites.includes(p.id));
-
-  const remove = (pid: string) =>
-    store.set((s) => ({
-      ...s,
-      customers: s.customers.map((c) => (c.id === current.id ? { ...c, favorites: c.favorites.filter((x) => x !== pid) } : c)),
-    }));
-
-  const addCart = (pid: string) =>
-    store.set((s) => ({
-      ...s,
-      customers: s.customers.map((c) => {
-        if (c.id !== current.id) return c;
-        const ex = c.cart.find((i) => i.productId === pid && !i.savedForLater);
-        return {
-          ...c,
-          cart: ex ? c.cart.map((i) => (i === ex ? { ...i, qty: i.qty + 1 } : i)) : [...c.cart, { productId: pid, qty: 1 }],
-        };
-      }),
-    }));
 
   return (
     <div className="min-h-screen">

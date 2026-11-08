@@ -7,6 +7,14 @@ import { Bookmark, Minus, Plus, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/cart")({
   component: CartPage,
+  head: () => ({ meta: [
+    { title: "Your cart — SULTAN AL MISK" },
+    { name: "description", content: "Review your SULTAN AL MISK perfumes, selected sizes and total." },
+    { property: "og:title", content: "Your cart — SULTAN AL MISK" },
+    { property: "og:description", content: "Review your perfumes, selected sizes and total." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
 });
 
 function CartPage() {
