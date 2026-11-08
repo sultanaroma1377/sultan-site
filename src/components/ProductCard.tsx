@@ -3,6 +3,7 @@ import { Heart, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { store, useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
 export function requireLogin() {
   if (!store.get().currentCustomerId) {
@@ -40,7 +41,7 @@ export function addCart(pid: string) {
   toast.success("Added to cart");
 }
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, variants = [product] }: { product: Product; variants?: Product[] }) {
   const commonImg = useStore((s) => s.commonProductImage);
   const fav = useStore(
     (s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(product.id) ?? false,
@@ -59,13 +60,13 @@ export function ProductCard({ product }: { product: Product }) {
             </div>
           )}
         </Link>
-        <button
+        <Button size="icon" variant="ghost"
           onClick={() => toggleFav(product.id)}
-          className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-white/30 backdrop-blur-md hover:bg-white/45"
+          className="absolute right-2 top-2 rounded-full bg-background/30 backdrop-blur-md hover:bg-background/45"
           aria-label="Favorite"
         >
           <Heart className={`h-4 w-4 text-on-gradient ${fav ? "fill-current" : ""}`} />
-        </button>
+        </Button>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <Link
@@ -73,18 +74,13 @@ export function ProductCard({ product }: { product: Product }) {
           params={{ id: product.id }}
           className="font-serif text-lg leading-tight text-on-gradient hover:underline"
         >
-          {product.name}
+          {product.baseName ?? product.name}
         </Link>
+        {product.parentId && <p className="text-xs text-on-gradient-muted">{variants.map(v => v.variantLabel).join(" · ")}</p>}
         {product.description && <p className="line-clamp-2 text-xs text-on-gradient-muted">{product.description}</p>}
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="font-medium text-on-gradient">₹{product.price.toLocaleString("en-IN")}</span>
-          <button
-            onClick={() => addCart(product.id)}
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/90 text-primary hover:bg-white"
-            aria-label="Add to cart"
-          >
-            <ShoppingBag className="h-4 w-4" />
-          </button>
+          <span className="font-medium text-on-gradient">{product.parentId ? "From " : ""}₹{Math.min(...variants.map(v => v.price)).toLocaleString("en-IN")}</span>
+          {product.parentId ? <Button asChild size="sm"><Link to="/product/$id" params={{ id: product.id }}>Sizes</Link></Button> : <Button size="icon" onClick={() => addCart(product.id)} className="rounded-full" aria-label="Add to cart"><ShoppingBag className="h-4 w-4" /></Button>}
         </div>
       </div>
     </article>
