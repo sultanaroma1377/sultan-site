@@ -5,6 +5,7 @@ import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { ProductCard } from "@/components/ProductCard";
 import { useStore } from "@/lib/store";
+import { productGroups } from "@/lib/product-groups";
 
 export const Route = createFileRoute("/products")({
   validateSearch: (search: Record<string, unknown>) => ({ q: typeof search.q === "string" ? search.q : "" }),
@@ -27,7 +28,7 @@ function ProductsPage() {
   const navigate = useNavigate();
 
   const filtered = useMemo(
-    () => products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase())),
+    () => productGroups(products).filter(group => group.some(p => p.name.toLowerCase().includes(q.toLowerCase()))),
     [products, q],
   );
 
@@ -50,9 +51,10 @@ function ProductsPage() {
       <section className="mx-auto max-w-6xl px-4 py-10 md:px-6">
         <h1 className="mb-8 font-serif text-3xl">Our Perfumes</h1>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
-          {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+          {filtered.map(group => {
+            const p = group[0];
+            return p ? <ProductCard key={p.parentId ?? p.id} product={p} variants={group} /> : null;
+          })}
         </div>
         {filtered.length === 0 && <p className="py-20 text-center text-muted-foreground">No perfumes match your search.</p>}
       </section>

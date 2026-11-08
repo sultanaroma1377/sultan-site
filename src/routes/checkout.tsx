@@ -8,6 +8,14 @@ import type { Address } from "@/lib/types";
 
 export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
+  head: () => ({ meta: [
+    { title: "Checkout — SULTAN AL MISK" },
+    { name: "description", content: "Confirm delivery details for your SULTAN AL MISK order." },
+    { property: "og:title", content: "Checkout — SULTAN AL MISK" },
+    { property: "og:description", content: "Confirm delivery details for your perfume order." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
 });
 
 function CheckoutPage() {

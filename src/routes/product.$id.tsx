@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag, Share2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { addCart, toggleFav } from "@/components/ProductCard";
@@ -21,9 +24,23 @@ export const Route = createFileRoute("/product/$id")({
 
 function ProductPage() {
   const { id } = Route.useParams();
-  const product = useStore((s) => s.products.find((p) => p.id === id) ?? null);
-  const fav = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(id) ?? false);
+  const products = useStore(s => s.products);
+  const initial = products.find(p => p.id === id);
+  const [selection, setSelection] = useState<{ routeId: string; sku: string } | null>(null);
+  const variants = initial ? products.filter(p => initial.parentId ? p.parentId === initial.parentId : p.id === initial.id) : [];
+  const product = variants.find(p => p.id === (selection?.routeId === id ? selection.sku : id)) ?? initial;
+  const fav = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(product?.id ?? id) ?? false);
   const commonImg = useStore((s) => s.commonProductImage);
+  const share = async () => {
+    if (!product) return;
+    const url = new URL(`/product/${encodeURIComponent(product.id)}`, window.location.origin).href;
+    try {
+      if (navigator.share) await navigator.share({ title: product.name, url });
+      else { await navigator.clipboard.writeText(url); toast.success("Product link copied"); }
+    } catch (error) {
+      if (!(error instanceof Error && error.name === "AbortError")) toast.error("Unable to share this product");
+    }
+  };
 
   return (
     <div className="relative min-h-screen">
@@ -53,23 +70,25 @@ function ProductPage() {
               {product.category && (
                 <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">{product.category}</p>
               )}
-              <h1 className="mt-2 font-serif text-4xl">{product.name}</h1>
+              <h1 className="mt-2 font-serif text-4xl">{product.baseName ?? product.name}</h1>
+              {product.parentId && <fieldset className="mt-6"><legend className="mb-2 text-sm font-medium">Size</legend><div className="flex flex-wrap gap-2">{variants.map(v => <Button key={v.id} variant={v.id === product.id ? "default" : "outline"} aria-pressed={v.id === product.id} onClick={() => setSelection({ routeId: id, sku: v.id })}>{v.variantLabel}</Button>)}</div></fieldset>}
               <p className="mt-3 text-2xl font-medium">₹{product.price.toLocaleString("en-IN")}</p>
               {product.description && <p className="mt-4 text-muted-foreground">{product.description}</p>}
-              <div className="mt-8 flex gap-3">
-                <button
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button
                   onClick={() => addCart(product.id)}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
+                  className="rounded-full"
                 >
                   <ShoppingBag className="h-4 w-4" /> Add to cart
-                </button>
-                <button
+                </Button>
+                <Button variant="outline"
                   onClick={() => toggleFav(product.id)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-medium backdrop-blur-md"
+                  className="rounded-full"
                 >
                   <Heart className={`h-4 w-4 ${fav ? "fill-destructive text-destructive" : ""}`} />
                   {fav ? "In favorites" : "Add to favorites"}
-                </button>
+                </Button>
+                <Button variant="outline" className="rounded-full" onClick={share}><Share2 />Share</Button>
               </div>
               <Link to="/products" search={{ q: "" }} className="mt-6 inline-block text-sm text-primary hover:underline">
                 ← Back to all perfumes

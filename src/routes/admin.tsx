@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { store, useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import type { Product, ConfirmedOrder } from "@/lib/types";
 import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
+import { productGroups } from "@/lib/product-groups";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -94,7 +95,8 @@ function Card({ children, title }: { children: React.ReactNode; title?: string }
 function SiteTab() {
   const site = useStore((s) => s.site);
   const admins = useStore((s) => s.admins);
-  const [draft, setDraft] = useState(site);
+  const draft = site;
+  const setDraft = (next: typeof site) => store.set(s => ({ ...s, site: next }));
   const [newAdmin, setNewAdmin] = useState({ username: "", password: "" });
   const [pwChange, setPwChange] = useState({ which: admins[0]?.username ?? "", newUsername: "", newPassword: "" });
 
@@ -168,8 +170,8 @@ function ProductsTab() {
   const commonImg = useStore((s) => s.commonProductImage);
   const [draft, setDraft] = useState<Omit<Product, "id">>({ name: "", price: 0, description: "", category: "" });
   const [editing, setEditing] = useState<string | null>(null);
-  const [sync, setSync] = useState(sheetSync);
-  useEffect(() => setSync(sheetSync), [sheetSync]);
+  const sync = sheetSync;
+  const setSync = (next: typeof sync | ((current: typeof sync) => typeof sync)) => store.set(s => ({ ...s, sheetSync: typeof next === "function" ? next(s.sheetSync) : next }));
   const [syncing, setSyncing] = useState(false);
   const mode = sync.mode ?? "sheet";
   const variants = sync.variants ?? [];
@@ -188,7 +190,8 @@ function ProductsTab() {
 
   const startEdit = (p: Product) => {
     setEditing(p.id);
-    setDraft({ name: p.name, price: p.price, description: p.description, category: p.category, image: p.image });
+    const { id: _id, ...details } = p;
+    setDraft(details);
   };
 
   const syncSheets = async () => {
@@ -299,20 +302,25 @@ function ProductsTab() {
         <Button className="mt-3 ml-2" variant="outline" onClick={() => { store.set(s => ({ ...s, sheetSync: sync })); toast.success("Sheet settings saved"); }}>Save settings</Button>
       </Card>
 
-      <Card title={`Products (${products.length})`}>
+      <Card title={`Products (${productGroups(products).length})`}>
         <div className="space-y-2">
-          {products.map((p) => (
-            <div key={p.id} className="flex items-center justify-between rounded-md border p-3">
+          {productGroups(products).map((group) => {
+            const p = group[0];
+            if (!p) return null;
+            return <div key={p.parentId ?? p.id} className="rounded-md border p-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <div className="font-medium">{p.name}</div>
+                <div className="font-medium">{p.baseName ?? p.name}</div>
                 <div className="text-sm text-muted-foreground">₹{p.price} · {p.category}</div>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => startEdit(p)}>Edit</Button>
-                <Button size="sm" variant="destructive" onClick={() => store.set((s) => ({ ...s, products: s.products.filter((x) => x.id !== p.id) }))}>Delete</Button>
+                {!p.parentId && <Button size="sm" variant="outline" onClick={() => startEdit(p)}>Edit</Button>}
+                <Button size="sm" variant="destructive" onClick={() => store.set((s) => ({ ...s, products: s.products.filter((x) => !group.some(v => v.id === x.id)) }))}>Delete</Button>
               </div>
+              </div>
+              {p.parentId && <div className="mt-3 space-y-2 border-t pt-3">{group.map(v => <div key={v.id} className="flex flex-wrap items-center justify-between gap-2 pl-3"><span className="text-sm">{v.variantLabel} · ₹{v.price}</span><div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => startEdit(v)}>Edit size</Button><Button size="sm" variant="ghost" onClick={() => store.set(s => ({ ...s, products: s.products.filter(x => x.id !== v.id) }))}>Remove size</Button></div></div>)}</div>}
             </div>
-          ))}
+          })}
         </div>
       </Card>
     </div>
@@ -362,7 +370,10 @@ function CarouselTab() {
           <label className="text-sm">Link a product (optional)
             <select className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={productId} onChange={(e) => setProductId(e.target.value)}>
               <option value="">— none —</option>
-              {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {productGroups(products).map(group => {
+                const p = group[0];
+                return p ? <option key={p.id} value={p.id}>{p.baseName ?? p.name}</option> : null;
+              })}
             </select>
           </label>
           <label className="text-sm md:col-span-2">Caption (optional)
