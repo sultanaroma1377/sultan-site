@@ -30,7 +30,7 @@ export function mapSheetProducts(rows: unknown[][], mode: SheetMode, variants: E
       } else {
         for (const variant of variants) {
           const cost = number(row[3]) / 100 * variant.oilMl + variant.packagingCost;
-          products.push({ id: `${rowId.padStart(2, "0")}v${variant.label.toLowerCase().replace(/\s+/g, "")}`, name: `${name} ${variant.label.trim()}`, price: Math.ceil(cost / 0.30 / 10) * 10, buyingPrice: cost, category: "Perfume" });
+          products.push({ id: `${rowId.padStart(2, "0")}v${variant.label.toLowerCase().replace(/\s+/g, "")}`, name: `${name} ${variant.label.trim()}`, parentId: `eco-${rowId.padStart(2, "0")}`, baseName: name, variantLabel: variant.label.trim(), price: Math.ceil(cost / 0.30 / 10) * 10, buyingPrice: cost, category: "Perfume" });
         }
       }
     }

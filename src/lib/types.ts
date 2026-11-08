@@ -6,6 +6,9 @@ export type Product = {
   image?: string;
   description?: string;
   category?: string;
+  parentId?: string;
+  baseName?: string;
+  variantLabel?: string;
 };
 
 export type Address = {

@@ -1,6 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { Admin, CarouselSlide, ConfirmedOrder, Coupon, Customer, Product, SiteSettings } from "./types";
 import type { EcoVariant, SheetMode } from "./sheet-mapping";
+import { migrateEcoProducts } from "./product-groups";
+import { toast } from "sonner";
 
 type State = {
   site: SiteSettings;
@@ -56,6 +58,7 @@ function load(): State {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultState;
     const parsed = { ...defaultState, ...JSON.parse(raw) };
+    parsed.products = migrateEcoProducts(parsed.products, (parsed.sheetSync.variants ?? []).map((v: EcoVariant) => v.label));
     if (parsed.site?.name === "Maison Fleur") parsed.site = { ...parsed.site, name: "SULTAN AL MISK" };
     return parsed;
   } catch {
@@ -63,16 +66,18 @@ function load(): State {
   }
 }
 
-function persist() {
-  if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(state));
-  listeners.forEach((l) => l());
-}
-
 export const store = {
   get: () => state,
   set: (updater: (s: State) => State) => {
-    state = updater(state);
-    persist();
+    const next = updater(state);
+    try {
+      if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(next));
+    } catch {
+      toast.error("Changes could not be saved", { description: "Your browser storage may be full. Try a smaller image or free some space." });
+      throw new Error("Browser storage could not save changes");
+    }
+    state = next;
+    listeners.forEach((l) => l());
   },
   subscribe: (cb: () => void) => {
     listeners.add(cb);
