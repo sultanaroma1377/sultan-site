@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { store, useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -169,6 +169,7 @@ function ProductsTab() {
   const [draft, setDraft] = useState<Omit<Product, "id">>({ name: "", price: 0, description: "", category: "" });
   const [editing, setEditing] = useState<string | null>(null);
   const [sync, setSync] = useState(sheetSync);
+  useEffect(() => setSync(sheetSync), [sheetSync]);
   const [syncing, setSyncing] = useState(false);
   const mode = sync.mode ?? "sheet";
   const variants = sync.variants ?? [];
