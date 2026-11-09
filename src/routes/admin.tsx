@@ -9,6 +9,14 @@ import type { Product, ConfirmedOrder } from "@/lib/types";
 import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
 import { productGroups } from "@/lib/product-groups";
 
+function shrinkImage(file: File, max = 900): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); resolve(c.toDataURL("image/jpeg", 0.82)); };
+    img.onerror = reject; img.src = url;
+  });
+}
+
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
   head: () => ({ meta: [
@@ -172,7 +180,7 @@ function ProductsTab() {
   const sync = sheetSync;
   const setSync = (next: typeof sync | ((current: typeof sync) => typeof sync)) => store.set(s => ({ ...s, sheetSync: typeof next === "function" ? next(s.sheetSync) : next }));
   const [syncing, setSyncing] = useState(false);
-  const mode = sync.mode ?? "sheet";
+  const mode = sync.mode;
   const variants = sync.variants ?? [];
   const updateVariant = (index: number, patch: Partial<EcoVariant>) => setSync(s => ({ ...s, variants: (s.variants ?? []).map((v, i) => i === index ? { ...v, ...patch } : v) }));
 
@@ -195,9 +203,9 @@ function ProductsTab() {
 
   const syncSheets = async () => {
     if (!sync.apiKey || !sync.sheetId) { toast.error("Add API key and Sheet ID"); return; }
+    if (!mode) { toast.error("Choose G Sheet System or Eco System first"); return; }
     setSyncing(true);
     try {
-      store.set((s) => ({ ...s, sheetSync: sync }));
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sync.sheetId}/values/${encodeURIComponent(sync.range || "A1:AA1000")}?key=${sync.apiKey}`;
       const r = await fetch(url);
       if (!r.ok) throw new Error(`Google Sheets [${r.status}]: ${await r.text()}`);
@@ -267,15 +275,15 @@ function ProductsTab() {
 
       <Card title="Sync from Google Sheets">
         <div className="mb-4 flex flex-wrap gap-6">
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={mode === "sheet"} onChange={() => setSync(s => ({ ...s, mode: "sheet" }))} />G Sheet System</label>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={mode === "eco"} onChange={() => setSync(s => ({ ...s, mode: "eco" }))} />Eco System</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={mode === "sheet"} onChange={(e) => setSync(s => ({ ...s, mode: e.target.checked ? "sheet" : undefined }))} />G Sheet System</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={mode === "eco"} onChange={(e) => setSync(s => ({ ...s, mode: e.target.checked ? "eco" : undefined }))} />Eco System</label>
         </div>
         {mode === "eco" && <div className="mb-4 space-y-3">
           <div className="text-sm font-medium">Eco sizes</div>
           {variants.map((v, i) => <div key={i} className="grid gap-2 sm:grid-cols-[auto_1fr_1fr_1fr_auto]">
             <div className="flex flex-col items-center gap-1 text-xs">
               {v.image ? <img src={v.image} alt={`${v.label} image`} className="rounded-md object-cover" style={{ aspectRatio: "3 / 4", height: "4rem" }} /> : <div className="grid place-items-center rounded-md border text-[10px] text-muted-foreground" style={{ aspectRatio: "3 / 4", height: "4rem" }}>No image</div>}
-              <label className="cursor-pointer text-primary hover:underline">{v.image ? "Change" : "Add image"}<input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => { updateVariant(i, { image: r.result as string }); toast.success("Size image saved"); }; r.readAsDataURL(f); e.target.value = ""; }} /></label>
+              <label className="cursor-pointer text-primary hover:underline">{v.image ? "Change" : "Add image"}<input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; void shrinkImage(f).then((image) => { updateVariant(i, { image }); toast.success("Size image saved"); }); e.target.value = ""; }} /></label>
               {v.image && <button className="text-destructive hover:underline" onClick={() => updateVariant(i, { image: undefined })}>Remove image</button>}
             </div>
             <label className="text-xs">Size label<input aria-label={`Size label ${i + 1}`} className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={v.label} onChange={e => updateVariant(i, { label: e.target.value })} /></label>
