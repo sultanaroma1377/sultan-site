@@ -1,7 +1,7 @@
 import type { Product } from "./types";
 
 export type SheetMode = "sheet" | "eco";
-export type EcoVariant = { label: string; oilMl: number; packagingCost: number };
+export type EcoVariant = { label: string; oilMl: number; packagingCost: number; image?: string };
 
 const text = (value: unknown) => String(value ?? "").trim();
 const number = (value: unknown) => parseFloat(text(value)) || 0;

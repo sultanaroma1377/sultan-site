@@ -6,7 +6,7 @@ import { useStore } from "@/lib/store";
 export function HeroCarousel() {
   const slides = useStore((s) => s.carousel);
   const products = useStore((s) => s.products);
-  const commonImg = useStore((s) => s.commonProductImage);
+  const sizes = useStore((s) => s.sheetSync.variants);
   const [i, setI] = useState(0);
 
   const items = slides
@@ -14,7 +14,7 @@ export function HeroCarousel() {
       const p = sl.productId ? products.find((x) => x.id === sl.productId) : undefined;
       return {
         id: sl.id,
-        image: sl.image ?? p?.image ?? (p ? commonImg : undefined),
+        image: sl.image ?? p?.image ?? (p?.variantLabel ? sizes?.find((v) => v.label === p.variantLabel)?.image : undefined),
         caption: sl.caption ?? p?.name,
         productId: p?.id,
       };
