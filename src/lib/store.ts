@@ -14,7 +14,6 @@ type State = {
   orders: ConfirmedOrder[];
   carousel: CarouselSlide[];
   sheetSync: { apiKey: string; sheetId: string; range: string; mode?: SheetMode; variants?: EcoVariant[] };
-  commonProductImage?: string;
 };
 
 const KEY = "perfume_app_v1";
@@ -46,7 +45,6 @@ const defaultState: State = {
   orders: [],
   carousel: [],
   sheetSync: { apiKey: "", sheetId: "", range: "A1:AA1000" },
-  commonProductImage: undefined,
 };
 
 let state: State = load();
@@ -58,6 +56,7 @@ function load(): State {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultState;
     const parsed = { ...defaultState, ...JSON.parse(raw) };
+    delete parsed.commonProductImage;
     parsed.products = migrateEcoProducts(parsed.products, (parsed.sheetSync.variants ?? []).map((v: EcoVariant) => v.label));
     if (parsed.site?.name === "Maison Fleur") parsed.site = { ...parsed.site, name: "SULTAN AL MISK" };
     return parsed;
@@ -95,6 +94,13 @@ export function useStore<T>(selector: (s: State) => T): T {
     () => selector(defaultState),
   );
   return mounted ? value : selector(defaultState);
+}
+
+/** Product's own image, else the image set for its size (variant label). */
+export function useProductImage(p?: { image?: string; variantLabel?: string }) {
+  const variants = useStore((s) => s.sheetSync.variants);
+  if (!p) return undefined;
+  return p.image ?? (p.variantLabel ? variants?.find((v) => v.label === p.variantLabel)?.image : undefined);
 }
 
 export function uid() {

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Heart, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { store, useStore } from "@/lib/store";
+import { store, useProductImage, useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
@@ -42,7 +42,7 @@ export function addCart(pid: string) {
 }
 
 export function ProductCard({ product, variants = [product] }: { product: Product; variants?: Product[] }) {
-  const commonImg = useStore((s) => s.commonProductImage);
+  const img = useProductImage(product);
   const fav = useStore(
     (s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(product.id) ?? false,
   );
@@ -52,8 +52,8 @@ export function ProductCard({ product, variants = [product] }: { product: Produc
       {/* 4 (height) : 3 (width) */}
       <div className="relative aspect-[3/4] overflow-hidden">
         <Link to="/product/$id" params={{ id: product.id }} className="block h-full w-full">
-          {(product.image ?? commonImg) ? (
-            <img src={product.image ?? commonImg} alt={product.name} className="h-full w-full object-cover transition group-hover:scale-105" />
+          {img ? (
+            <img src={img} alt={product.name} className="h-full w-full object-cover transition group-hover:scale-105" />
           ) : (
             <div className="grid h-full w-full place-items-center font-serif text-5xl text-on-gradient-muted">
               {product.name[0]}

@@ -167,7 +167,6 @@ function SiteTab() {
 function ProductsTab() {
   const products = useStore((s) => s.products);
   const sheetSync = useStore((s) => s.sheetSync);
-  const commonImg = useStore((s) => s.commonProductImage);
   const [draft, setDraft] = useState<Omit<Product, "id">>({ name: "", price: 0, description: "", category: "" });
   const [editing, setEditing] = useState<string | null>(null);
   const sync = sheetSync;
@@ -266,18 +265,6 @@ function ProductsTab() {
         </div>
       </Card>
 
-      <Card title="Common product image">
-        <p className="mb-3 text-sm text-muted-foreground">Shown on every product that has no image of its own (including synced products).</p>
-        <div className="flex flex-wrap items-center gap-4">
-          {commonImg ? <img src={commonImg} alt="Common" className="rounded-md object-cover" style={{ aspectRatio: "3 / 4", height: "8rem" }} /> : <div className="grid place-items-center rounded-md border text-xs text-muted-foreground" style={{ aspectRatio: "3 / 4", height: "8rem" }}>No image</div>}
-          <label className="cursor-pointer rounded-md border px-3 py-2 text-sm hover:bg-secondary">
-            {commonImg ? "Change image" : "Upload image"}
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => { store.set((s) => ({ ...s, commonProductImage: r.result as string })); toast.success("Common image saved"); }; r.readAsDataURL(f); e.target.value = ""; }} />
-          </label>
-          {commonImg && <Button size="sm" variant="destructive" onClick={() => store.set((s) => ({ ...s, commonProductImage: undefined }))}>Delete</Button>}
-        </div>
-      </Card>
-
       <Card title="Sync from Google Sheets">
         <div className="mb-4 flex flex-wrap gap-6">
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={mode === "sheet"} onChange={() => setSync(s => ({ ...s, mode: "sheet" }))} />G Sheet System</label>
@@ -285,7 +272,12 @@ function ProductsTab() {
         </div>
         {mode === "eco" && <div className="mb-4 space-y-3">
           <div className="text-sm font-medium">Eco sizes</div>
-          {variants.map((v, i) => <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+          {variants.map((v, i) => <div key={i} className="grid gap-2 sm:grid-cols-[auto_1fr_1fr_1fr_auto]">
+            <div className="flex flex-col items-center gap-1 text-xs">
+              {v.image ? <img src={v.image} alt={`${v.label} image`} className="rounded-md object-cover" style={{ aspectRatio: "3 / 4", height: "4rem" }} /> : <div className="grid place-items-center rounded-md border text-[10px] text-muted-foreground" style={{ aspectRatio: "3 / 4", height: "4rem" }}>No image</div>}
+              <label className="cursor-pointer text-primary hover:underline">{v.image ? "Change" : "Add image"}<input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => { updateVariant(i, { image: r.result as string }); toast.success("Size image saved"); }; r.readAsDataURL(f); e.target.value = ""; }} /></label>
+              {v.image && <button className="text-destructive hover:underline" onClick={() => updateVariant(i, { image: undefined })}>Remove image</button>}
+            </div>
             <label className="text-xs">Size label<input aria-label={`Size label ${i + 1}`} className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={v.label} onChange={e => updateVariant(i, { label: e.target.value })} /></label>
             <label className="text-xs">Oil volume (ml)<input aria-label={`Oil volume ${i + 1}`} type="number" min="0.01" step="any" className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={v.oilMl || ""} onChange={e => updateVariant(i, { oilMl: Number(e.target.value) })} /></label>
             <label className="text-xs">Packaging cost (₹)<input aria-label={`Packaging cost ${i + 1}`} type="number" min="0" step="any" className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={v.packagingCost} onChange={e => updateVariant(i, { packagingCost: Number(e.target.value) })} /></label>

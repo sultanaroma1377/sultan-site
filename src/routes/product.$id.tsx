@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { addCart, toggleFav } from "@/components/ProductCard";
-import { useStore } from "@/lib/store";
+import { useProductImage, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -30,7 +30,7 @@ function ProductPage() {
   const variants = initial ? products.filter(p => initial.parentId ? p.parentId === initial.parentId : p.id === initial.id) : [];
   const product = variants.find(p => p.id === (selection?.routeId === id ? selection.sku : id)) ?? initial;
   const fav = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId)?.favorites.includes(product?.id ?? id) ?? false);
-  const commonImg = useStore((s) => s.commonProductImage);
+  const img = useProductImage(product);
   const share = async () => {
     if (!product) return;
     const url = new URL(`/product/${encodeURIComponent(product.id)}`, window.location.origin).href;
@@ -65,8 +65,8 @@ function ProductPage() {
           <div className="grid gap-8 md:grid-cols-2">
             <div className="overflow-hidden rounded-2xl border border-border bg-theme-gradient-reverse">
               <div className="aspect-[3/4] w-full">
-                {(product.image ?? commonImg) ? (
-                  <img src={product.image ?? commonImg} alt={product.name} className="h-full w-full object-cover" />
+                {img ? (
+                  <img src={img} alt={product.name} className="h-full w-full object-cover" />
                 ) : (
                   <div className="grid h-full w-full place-items-center font-serif text-7xl text-on-gradient-muted">
                     {product.name[0]}
