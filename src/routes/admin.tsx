@@ -370,10 +370,9 @@ function CarouselTab() {
           <label className="text-sm">Link a product (optional)
             <select className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={productId} onChange={(e) => setProductId(e.target.value)}>
               <option value="">— none —</option>
-              {productGroups(products).map(group => {
-                const p = group[0];
-                return p ? <option key={p.id} value={p.id}>{p.baseName ?? p.name}</option> : null;
-              })}
+              {products.map(p => (
+                <option key={p.id} value={p.id}>{p.baseName ? `${p.baseName}${p.variantLabel ? ` — ${p.variantLabel}` : ""}` : p.name}</option>
+              ))}
             </select>
           </label>
           <label className="text-sm md:col-span-2">Caption (optional)

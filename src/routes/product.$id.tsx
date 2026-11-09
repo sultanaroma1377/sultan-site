@@ -34,12 +34,20 @@ function ProductPage() {
   const share = async () => {
     if (!product) return;
     const url = new URL(`/product/${encodeURIComponent(product.id)}`, window.location.origin).href;
-    try {
-      if (navigator.share) await navigator.share({ title: product.name, url });
-      else { await navigator.clipboard.writeText(url); toast.success("Product link copied"); }
-    } catch (error) {
-      if (!(error instanceof Error && error.name === "AbortError")) toast.error("Unable to share this product");
+    if (navigator.share) {
+      try { await navigator.share({ title: product.name, url }); return; }
+      catch (error) { if (error instanceof Error && error.name === "AbortError") return; }
     }
+    try { await navigator.clipboard.writeText(url); toast.success("Product link copied"); return; } catch {}
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      if (ok) { toast.success("Product link copied"); return; }
+    } catch {}
+    window.prompt("Copy this product link:", url);
   };
 
   return (
