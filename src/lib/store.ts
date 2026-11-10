@@ -68,7 +68,11 @@ function load(): State {
 export const store = {
   get: () => state,
   set: (updater: (s: State) => State) => {
-    const next = updater(state);
+    const updated = updater(state);
+    const next = {
+      ...updated,
+      products: migrateEcoProducts(updated.products, (updated.sheetSync.variants ?? []).map(v => v.label)),
+    };
     try {
       if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(next));
     } catch {

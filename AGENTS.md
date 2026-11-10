@@ -11,4 +11,5 @@
 
 - Keep Google Sheets parsing and SKU-based merges in a browser-safe pure helper with regression tests so both import modes share consistent updates without cloud dependencies.
 - Keep Eco SKUs as individual stored records with parent metadata; group them for browsing while retaining exact SKU IDs in carts, favorites, carousel links and order snapshots.
+- Normalize legacy Eco parent metadata on store hydration and writes using SKU/name size information even without current size settings, so saved sizes cannot revert to separate perfume listings.
 - Save site and sheet settings on change through the shared store; commit browser persistence before notifying subscribers so failed writes cannot appear saved.
