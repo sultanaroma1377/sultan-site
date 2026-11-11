@@ -17,7 +17,7 @@ export function UserHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
         <Link to="/" className="flex items-center gap-3">
           {site.logo ? (
-            <img src={site.logo} alt={site.name} className="h-10 w-10 rounded-full object-cover" />
+            <img src={site.logo} alt={site.name} className="h-10 w-auto max-w-[160px] object-contain" />
           ) : (
             <span className="grid h-10 w-10 place-items-center rounded-full bg-secondary font-serif text-lg">
               {site.name?.[0] ?? "M"}
