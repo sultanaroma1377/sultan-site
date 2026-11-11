@@ -8,6 +8,7 @@ import jsPDF from "jspdf";
 import type { Product, ConfirmedOrder } from "@/lib/types";
 import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
 import { productGroups } from "@/lib/product-groups";
+import { adminSignIn } from "@/lib/cloud-sync";
 
 function shrinkImage(file: File, max = 900): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -34,17 +35,14 @@ function AdminPage() {
   const [u, setU] = useState("");
   const [p, setP] = useState("");
   const [err, setErr] = useState("");
-  const admins = useStore((s) => s.admins);
-
   if (!authed) {
     return (
       <div className="grid min-h-screen place-items-center bg-secondary/40 p-4">
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const ok = (u.trim() === "aaa" && p === "aaa") || admins.find((a) => a.username === u.trim() && a.password === p);
-            if (ok) setAuthed(true);
-            else setErr("Invalid credentials");
+            setErr("");
+            adminSignIn(u, p).then((ok) => ok ? setAuthed(true) : setErr("Invalid credentials")).catch(() => setErr("Could not reach the server. Try again."));
           }}
           className="w-full max-w-sm space-y-4 rounded-lg border bg-card p-8 shadow-sm"
         >
