@@ -122,7 +122,7 @@ function SiteTab() {
           <label className="text-sm">Tagline<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={draft.tagline} onChange={(e) => setDraft({ ...draft, tagline: e.target.value })} /></label>
           <label className="text-sm md:col-span-2">Logo (upload from device)
             <input type="file" accept="image/*" className="mt-1 block w-full text-sm" onChange={(e) => e.target.files?.[0] && handleLogo(e.target.files[0])} />
-            {draft.logo && <img src={draft.logo} alt="logo" className="mt-2 h-16 w-16 rounded-full object-cover" />}
+            {draft.logo && <img src={draft.logo} alt="logo" className="mt-2 h-16 w-auto max-w-[220px] object-contain" />}
           </label>
           <label className="text-sm">Instagram<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={draft.social.instagram ?? ""} onChange={(e) => setDraft({ ...draft, social: { ...draft.social, instagram: e.target.value } })} /></label>
           <label className="text-sm">Facebook<input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" value={draft.social.facebook ?? ""} onChange={(e) => setDraft({ ...draft, social: { ...draft.social, facebook: e.target.value } })} /></label>
