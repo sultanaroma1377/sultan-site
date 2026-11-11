@@ -13,3 +13,4 @@
 - Keep Eco SKUs as individual stored records with parent metadata; group them for browsing while retaining exact SKU IDs in carts, favorites, carousel links and order snapshots.
 - Normalize legacy Eco parent metadata on store hydration and writes using SKU/name size information even without current size settings, so saved sizes cannot revert to separate perfume listings.
 - Save site and sheet settings on change through the shared store; commit browser persistence before notifying subscribers so failed writes cannot appear saved.
+- Shop content (site, products, carousel, coupons) and admin settings are saved online in one locked table via server functions; admin changes push only after a server-checked admin sign-in, so browsers cannot write directly.
