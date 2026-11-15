@@ -18,6 +18,7 @@ import "@fontsource/karla/600.css";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Bubbles } from "@/components/Bubbles";
 import { Toaster } from "@/components/ui/sonner";
+import { startCustomerSync } from "@/lib/customer-sync";
 import { startCloudSync } from "@/lib/cloud-sync";
 
 function NotFoundComponent() {
@@ -122,7 +123,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { void startCloudSync(); }, []);
+  useEffect(() => { void startCloudSync(); startCustomerSync(); }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

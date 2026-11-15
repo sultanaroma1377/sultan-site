@@ -3,6 +3,7 @@ import { Menu, ShoppingBag, X } from "lucide-react";
 import { useState } from "react";
 import { store, useStore } from "@/lib/store";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { signInCustomer, signOutCustomer } from "@/lib/customer-sync";
 import { Button } from "@/components/ui/button";
 
 export function UserHeader() {
@@ -13,7 +14,7 @@ export function UserHeader() {
   });
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-white/10 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-on-gradient/10 bg-on-gradient/10 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
         <Link to="/" className="flex items-center gap-3">
           {site.logo ? (
@@ -27,7 +28,7 @@ export function UserHeader() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-white/15">
+          <Link to="/cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-on-gradient/15">
             <ShoppingBag className="h-5 w-5" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
@@ -45,7 +46,7 @@ export function UserHeader() {
 function AccountSheet() {
   const [open, setOpen] = useState(false);
   const current = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId) ?? null);
-  const [mode, setMode] = useState<"menu" | "login" | "signup" | "account">("menu");
+  const [mode, setMode] = useState<"menu" | "login" | "signup">("menu");
   const [u, setU] = useState("");
   const [p, setP] = useState("");
   const [err, setErr] = useState("");
@@ -61,11 +62,11 @@ function AccountSheet() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="grid h-10 w-10 place-items-center rounded-full hover:bg-white/15" aria-label="Menu">
+        <Button variant="ghost" size="icon" aria-label="Menu">
           <Menu className="h-5 w-5" />
-        </button>
+        </Button>
       </SheetTrigger>
-      <SheetContent className="w-full border-none bg-theme-gradient text-white sm:max-w-md [&_.text-muted-foreground]:text-white/75 [&_input]:bg-white/10 [&_input]:text-white [&_input]:placeholder:text-white/60 [&_input]:border-white/30">
+      <SheetContent className="w-full border-none bg-theme-gradient text-on-gradient sm:max-w-md [&_.text-muted-foreground]:text-on-gradient/75 [&_input]:bg-on-gradient/10 [&_input]:text-on-gradient [&_input]:placeholder:text-on-gradient/60 [&_input]:border-on-gradient/30">
         <SheetHeader>
           <SheetTitle className="font-serif text-2xl">
             {current ? `Hello, ${current.username}` : "Welcome"}
@@ -74,29 +75,29 @@ function AccountSheet() {
 
         {mode === "menu" && (
           <div className="mt-6 space-y-2 px-4">
-            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Home</Link>
-            <Link to="/products" search={{ q: "" }} onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Shop</Link>
-            <Link to="/favorites" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Favorites</Link>
-            <Link to="/cart" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Cart</Link>
-            <Link to="/admin" onClick={close} className="block rounded-md px-3 py-2 hover:bg-white/15">Admin</Link>
+            <Link to="/" onClick={close} className="block rounded-md px-3 py-2 hover:bg-on-gradient/15">Home</Link>
+            <Link to="/products" search={{ q: "" }} onClick={close} className="block rounded-md px-3 py-2 hover:bg-on-gradient/15">Shop</Link>
+            <Link to="/favorites" onClick={close} className="block rounded-md px-3 py-2 hover:bg-on-gradient/15">Favorites</Link>
+            <Link to="/cart" onClick={close} className="block rounded-md px-3 py-2 hover:bg-on-gradient/15">Cart</Link>
+            <Link to="/admin" onClick={close} className="block rounded-md px-3 py-2 hover:bg-on-gradient/15">Admin</Link>
             <div className="my-3 h-px bg-border" />
             {current ? (
               <>
-                <button onClick={() => setMode("account")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Account details</button>
+                <Link to="/account" onClick={close} className="block px-3 py-2">Account details</Link>
+                <Link to="/orders" onClick={close} className="block px-3 py-2">Orders</Link>
                 <button
                   onClick={() => {
-                    store.set((s) => ({ ...s, currentCustomerId: null }));
-                    close();
+                    void signOutCustomer().then(close).catch(() => setErr("Could not logout; try again"));
                   }}
-                  className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15"
+                  className="block w-full rounded-md px-3 py-2 text-left hover:bg-on-gradient/15"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <button onClick={() => setMode("login")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Login</button>
-                <button onClick={() => setMode("signup")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-white/15">Create account</button>
+                <button onClick={() => setMode("login")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-on-gradient/15">Login</button>
+                <button onClick={() => setMode("signup")} className="block w-full rounded-md px-3 py-2 text-left hover:bg-on-gradient/15">Create account</button>
               </>
             )}
           </div>
@@ -108,119 +109,22 @@ function AccountSheet() {
             onSubmit={(e) => {
               e.preventDefault();
               setErr("");
-              const s = store.get();
-              if (mode === "signup") {
-                if (s.customers.find((c) => c.username === u)) { setErr("Username taken"); return; }
-                const id = Math.random().toString(36).slice(2, 10);
-                store.set((s2) => ({
-                  ...s2,
-                  customers: [...s2.customers, { id, username: u, password: p, favorites: [], cart: [], addresses: [] }],
-                  currentCustomerId: id,
-                }));
-                close();
-              } else {
-                const c = s.customers.find((c) => c.username === u && c.password === p);
-                if (!c) { setErr("Invalid credentials"); return; }
-                store.set((s2) => ({ ...s2, currentCustomerId: c.id }));
-                close();
-              }
+              void signInCustomer(u, p, mode === "signup").then(close).catch(error => setErr(error instanceof Error ? error.message : "Could not sign in"));
             }}
           >
             <h3 className="font-serif text-xl">{mode === "login" ? "Login" : "Create account"}</h3>
             <input className="w-full rounded-md border bg-background px-3 py-2" placeholder="Username" value={u} onChange={(e) => setU(e.target.value)} required />
-            <input className="w-full rounded-md border bg-background px-3 py-2" type="password" placeholder="Password" value={p} onChange={(e) => setP(e.target.value)} required />
+            <input className="w-full rounded-md border bg-background px-3 py-2" type="password" minLength={6} placeholder="Password" value={p} onChange={(e) => setP(e.target.value)} required />
             {err && <p className="text-sm text-destructive">{err}</p>}
-            <Button type="submit" className="w-full bg-white text-primary hover:bg-white/90">{mode === "login" ? "Login" : "Sign up"}</Button>
+            <Button type="submit" className="w-full bg-on-gradient text-primary hover:bg-on-gradient/90">{mode === "login" ? "Login" : "Sign up"}</Button>
             <button type="button" onClick={() => setMode("menu")} className="block w-full text-sm text-muted-foreground hover:underline">Back</button>
           </form>
         )}
 
-        {mode === "account" && current && <AccountDetails customerId={current.id} onBack={() => setMode("menu")} />}
-        <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 hover:bg-white/15" aria-label="Close">
+        <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 hover:bg-on-gradient/15" aria-label="Close">
           <X className="h-4 w-4" />
         </button>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function AccountDetails({ customerId, onBack }: { customerId: string; onBack: () => void }) {
-  const customer = useStore((s) => s.customers.find((c) => c.id === customerId)!);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [draft, setDraft] = useState({ line1: "", pincode: "", state: "", city: "" });
-
-  const startNew = () => {
-    setEditing("new");
-    setDraft({ line1: "", pincode: "", state: "", city: "" });
-  };
-
-  const startEdit = (id: string) => {
-    const a = customer.addresses.find((x) => x.id === id)!;
-    setEditing(id);
-    setDraft({ line1: a.line1, pincode: a.pincode, state: a.state, city: a.city });
-  };
-
-  async function lookupPin(pin: string) {
-    setDraft((d) => ({ ...d, pincode: pin }));
-    if (pin.length === 6) {
-      try {
-        const r = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
-        const j = await r.json();
-        const po = j?.[0]?.PostOffice?.[0];
-        if (po) setDraft((d) => ({ ...d, pincode: pin, state: po.State, city: po.District }));
-      } catch {}
-    }
-  }
-
-  const save = () => {
-    store.set((s) => ({
-      ...s,
-      customers: s.customers.map((c) =>
-        c.id !== customerId
-          ? c
-          : {
-              ...c,
-              addresses:
-                editing === "new"
-                  ? [...c.addresses, { id: Math.random().toString(36).slice(2, 10), ...draft }]
-                  : c.addresses.map((a) => (a.id === editing ? { ...a, ...draft } : a)),
-            },
-      ),
-    }));
-    setEditing(null);
-  };
-
-  return (
-    <div className="mt-6 space-y-4 px-4">
-      <button onClick={onBack} className="text-sm text-muted-foreground hover:underline">← Back</button>
-      <h3 className="font-serif text-xl">Addresses</h3>
-      <div className="space-y-2">
-        {customer.addresses.map((a) => (
-          <div key={a.id} className="flex items-start justify-between rounded-md border p-3 text-sm">
-            <div>
-              <div>{a.line1}</div>
-              <div className="text-muted-foreground">{a.city}, {a.state} - {a.pincode}</div>
-            </div>
-            <button className="text-sm text-white underline-offset-2 hover:underline" onClick={() => startEdit(a.id)}>Edit</button>
-          </div>
-        ))}
-        {customer.addresses.length === 0 && <p className="text-sm text-muted-foreground">No addresses yet.</p>}
-      </div>
-
-      {editing ? (
-        <div className="space-y-2 rounded-md border p-3">
-          <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Flat no., building, area" value={draft.line1} onChange={(e) => setDraft({ ...draft, line1: e.target.value })} />
-          <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Pincode" value={draft.pincode} onChange={(e) => lookupPin(e.target.value)} />
-          <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="State" value={draft.state} onChange={(e) => setDraft({ ...draft, state: e.target.value })} />
-          <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="City" value={draft.city} onChange={(e) => setDraft({ ...draft, city: e.target.value })} />
-          <div className="flex gap-2">
-            <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={save}>Save</Button>
-            <Button size="sm" variant="ghost" className="text-white hover:bg-white/15 hover:text-white" onClick={() => setEditing(null)}>Cancel</Button>
-          </div>
-        </div>
-      ) : (
-        <Button variant="outline" onClick={startNew} className="w-full border-white/40 bg-transparent text-white hover:bg-white/15 hover:text-white">+ Add address</Button>
-      )}
-    </div>
   );
 }

@@ -4,6 +4,10 @@ import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { store, useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
+import { previousReceivers } from "@/lib/customer-rules";
+import { checkoutCustomer } from "@/lib/customer.functions";
+import { flushCustomerChanges, refreshCustomer } from "@/lib/customer-sync";
+import { toast } from "sonner";
 import type { Address } from "@/lib/types";
 
 export const Route = createFileRoute("/checkout")({
@@ -20,6 +24,9 @@ export const Route = createFileRoute("/checkout")({
 
 function CheckoutPage() {
   const current = useStore((s) => s.customers.find((c) => c.id === s.currentCustomerId) ?? null);
+  const orders = useStore(s => s.orders);
+  const savedReceivers = previousReceivers(orders, current?.id ?? "");
+  const [busy, setBusy] = useState(false);
   const products = useStore((s) => s.products);
   const coupons = useStore((s) => s.coupons);
   const nav = useNavigate();
@@ -35,7 +42,7 @@ function CheckoutPage() {
       current?.cart
         .filter((i) => !i.savedForLater)
         .map((i) => {
-          const p = products.find((p) => p.id === i.productId)!;
+          const p = products.find((p) => p.id === i.productId);
           return { productId: i.productId, qty: i.qty, name: p?.name ?? "", price: p?.price ?? 0 };
         }) ?? [],
     [current, products],
@@ -59,38 +66,17 @@ function CheckoutPage() {
     }
   }
 
-  const confirm = () => {
-    let addrId = selectedAddrId;
-    let address: Address | undefined = current.addresses.find((a) => a.id === selectedAddrId);
-    if (showNewAddr) {
-      address = { id: Math.random().toString(36).slice(2, 10), ...newAddr };
-      addrId = address.id;
-      store.set((s) => ({
-        ...s,
-        customers: s.customers.map((c) => (c.id === current.id ? { ...c, addresses: [...c.addresses, address!] } : c)),
-      }));
-    }
-    if (!address) return;
-    const orderId = Math.random().toString(36).slice(2, 10);
-    store.set((s) => ({
-      ...s,
-      orders: [
-        ...s.orders,
-        {
-          id: orderId,
-          customerId: current.id,
-          items,
-          total,
-          address: address!,
-          receiverName: receiver.name,
-          receiverPhone: receiver.phone,
-          status: "pending",
-          createdAt: Date.now(),
-        },
-      ],
-      customers: s.customers.map((c) => (c.id === current.id ? { ...c, cart: c.cart.filter((i) => i.savedForLater) } : c)),
-    }));
-    setStep("done");
+  const confirm = async () => {
+    const address = showNewAddr ? { id: crypto.randomUUID(), ...newAddr } : current.addresses.find(a => a.id === selectedAddrId);
+    if (!address || busy) return;
+    setBusy(true);
+    try {
+      await flushCustomerChanges();
+      await checkoutCustomer({ data: { address, receiverName: receiver.name, receiverPhone: receiver.phone, couponCode } });
+      await refreshCustomer();
+      setStep("done");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Order could not be placed"); }
+    finally { setBusy(false); }
   };
 
   return (
@@ -126,13 +112,14 @@ function CheckoutPage() {
                 <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="City" value={newAddr.city} onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })} />
               </div>
             )}
-            <Button onClick={() => setStep("receiver")} disabled={showNewAddr ? !newAddr.line1 || !newAddr.pincode : !selectedAddrId}>Next</Button>
+            <Button onClick={() => setStep("receiver")} disabled={showNewAddr ? !newAddr.line1 || !/^\d{6}$/.test(newAddr.pincode) || !newAddr.state || !newAddr.city : !selectedAddrId}>Next</Button>
           </div>
         )}
 
         {step === "receiver" && (
           <div className="mt-8 space-y-4">
             <h2 className="font-serif text-2xl">Receiver details</h2>
+            {savedReceivers.length > 0 && <label className="block text-sm">Previous receivers<select aria-label="Previous receivers" defaultValue="" className="mt-2 w-full rounded-md border bg-popover px-3 py-2" onChange={e => { const selected = savedReceivers[Number(e.target.value)]; setReceiver(e.target.value === "" || !selected ? { name: "", phone: "" } : selected); }}><option value="">New receiver</option>{savedReceivers.map((r, i) => <option key={`${r.name}-${r.phone}`} value={i}>{r.name} — {r.phone}</option>)}</select></label>}
             <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Receiver name" value={receiver.name} onChange={(e) => setReceiver({ ...receiver, name: e.target.value })} />
             <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Phone number" value={receiver.phone} onChange={(e) => setReceiver({ ...receiver, phone: e.target.value })} />
             <div className="space-y-1">
@@ -148,7 +135,7 @@ function CheckoutPage() {
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep("address")}>Back</Button>
-              <Button onClick={confirm} disabled={!receiver.name || !receiver.phone}>Confirm order</Button>
+              <Button onClick={confirm} disabled={busy || !receiver.name || !receiver.phone}>{busy ? "Placing order…" : "Confirm order"}</Button>
             </div>
           </div>
         )}
