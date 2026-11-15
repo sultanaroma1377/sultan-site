@@ -11,18 +11,19 @@ export const customerLogin = createServerFn({ method: 'POST' }).inputValidator(d
   await h.assertWriteOrigin();
   const sb = await h.database();
   const username = data.username.toLowerCase();
-  let result = await sb.from('customer_accounts').select('*').eq('username', username).maybeSingle();
+  const result = await sb.from('customer_accounts').select('*').eq('username', username).maybeSingle();
+  let account = result.data;
   if (data.signup) {
     if (result.data) throw new Error('Username taken');
     const inserted = await sb.from('customer_accounts').insert({ username, password_hash: await h.passwordHash(data.password) }).select('*').single();
     if (inserted.error) throw new Error('Could not create account; try another username');
-    result = { ...result, data: inserted.data, error: null };
-  } else if (!result.data || await h.passwordHash(data.password, result.data.password_hash.split(':')[0]) !== result.data.password_hash) {
+    account = inserted.data;
+  } else if (!account || await h.passwordHash(data.password, account.password_hash.split(':')[0]) !== account.password_hash) {
     throw new Error('Invalid username or password');
   }
-  if (!result.data) throw new Error('Could not sign in');
-  await h.issueSession(result.data.id);
-  return { id: result.data.id, username: result.data.username, password: '', ...shopping.parse(result.data.data) } satisfies Customer;
+  if (!account) throw new Error('Could not sign in');
+  await h.issueSession(account.id);
+  return { id: account.id, username: account.username, password: '', ...shopping.parse(account.data) } satisfies Customer;
 });
 
 export const customerState = createServerFn({ method: 'GET' }).handler(async () => {
