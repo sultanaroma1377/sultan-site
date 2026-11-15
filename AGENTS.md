@@ -14,3 +14,5 @@
 - Normalize legacy Eco parent metadata on store hydration and writes using SKU/name size information even without current size settings, so saved sizes cannot revert to separate perfume listings.
 - Save site and sheet settings on change through the shared store; commit browser persistence before notifying subscribers so failed writes cannot appear saved.
 - Shop content (site, products, carousel, coupons) and admin settings are saved online in one locked table via server functions; admin changes push only after a server-checked admin sign-in, so browsers cannot write directly.
+- Customer username accounts use server-hashed passwords and opaque HTTP-only sessions in locked tables; customer-owned writes derive identity from the session, never client IDs, so private activity stays isolated.
+- Persist shopping through customer server functions, validate checkout totals against the online catalog, and poll authorized activity for cross-device admin visibility; exclude private customer data from browser persistence.

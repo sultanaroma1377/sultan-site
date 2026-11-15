@@ -1,4 +1,7 @@
 # Tasks
+- [ ] Add secure online customer accounts and customer activity in Admin.
+- [ ] Add account details/password change and customer orders pages.
+- [ ] Add previous receiver choices at checkout and verify the full customer/admin flow.
 - [x] Group Eco sizes beneath each perfume with size-specific cart, favorite and share actions.
 - [x] Save Eco settings and site edits automatically; verify reload persistence and shopping flow.
 - [x] Apply uploaded Yuzarsif font to the business name.

@@ -55,7 +55,7 @@ function load(): State {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return defaultState;
-    const parsed = { ...defaultState, ...JSON.parse(raw) };
+    const parsed = { ...defaultState, ...JSON.parse(raw), customers: [], orders: [], currentCustomerId: null };
     delete parsed.commonProductImage;
     parsed.products = migrateEcoProducts(parsed.products, (parsed.sheetSync.variants ?? []).map((v: EcoVariant) => v.label));
     if (parsed.site?.name === "Maison Fleur") parsed.site = { ...parsed.site, name: "SULTAN AL MISK" };
@@ -74,7 +74,7 @@ export const store = {
       products: migrateEcoProducts(updated.products, (updated.sheetSync.variants ?? []).map(v => v.label)),
     };
     try {
-      if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(next));
+      if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify({ ...next, customers: [], orders: [], currentCustomerId: null }));
     } catch {
       toast.error("Changes could not be saved", { description: "Your browser storage may be full. Try a smaller image or free some space." });
       throw new Error("Browser storage could not save changes");

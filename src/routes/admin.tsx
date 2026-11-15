@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { store, useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +8,8 @@ import jsPDF from "jspdf";
 import type { Product, ConfirmedOrder } from "@/lib/types";
 import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
 import { productGroups } from "@/lib/product-groups";
+import { refreshAdminActivity } from "@/lib/customer-sync";
+import { acceptCustomerOrder } from "@/lib/customer.functions";
 import { adminSignIn } from "@/lib/cloud-sync";
 
 function shrinkImage(file: File, max = 900): Promise<string> {
@@ -35,6 +37,12 @@ function AdminPage() {
   const [u, setU] = useState("");
   const [p, setP] = useState("");
   const [err, setErr] = useState("");
+  useEffect(() => {
+    if (!authed) return;
+    const refresh = () => { void refreshAdminActivity().catch(() => toast.error("Could not load customer activity")); };
+    refresh(); const timer = window.setInterval(refresh, 4000);
+    return () => window.clearInterval(timer);
+  }, [authed]);
   if (!authed) {
     return (
       <div className="grid min-h-screen place-items-center bg-secondary/40 p-4">
@@ -591,7 +599,7 @@ function OrdersTab() {
                   </label>
                   <div className="flex flex-col gap-2">
                     {o.status !== "accepted" && (
-                      <Button size="sm" onClick={() => store.set((s) => ({ ...s, orders: s.orders.map((x) => x.id === o.id ? { ...x, status: "accepted" } : x) }))}>Accept</Button>
+                      <Button size="sm" onClick={() => { void acceptCustomerOrder({ data: { id: o.id } }).then(refreshAdminActivity).catch(() => toast.error("Could not accept order")); }}>Accept</Button>
                     )}
                     <Button size="sm" variant="outline" onClick={() => printSingleA5(o)}>Print A5</Button>
                   </div>
