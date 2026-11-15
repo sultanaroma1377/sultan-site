@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      customer_accounts: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          password_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          password_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          password_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      customer_orders: {
+        Row: {
+          created_at: string
+          customer_id: string
+          data: Json
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          data: Json
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          data?: Json
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shop_data: {
         Row: {
           data: Json
@@ -31,6 +84,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      shop_sessions: {
+        Row: {
+          customer_id: string | null
+          expires_at: string
+          is_admin: boolean
+          token_hash: string
+        }
+        Insert: {
+          customer_id?: string | null
+          expires_at: string
+          is_admin?: boolean
+          token_hash: string
+        }
+        Update: {
+          customer_id?: string | null
+          expires_at?: string
+          is_admin?: boolean
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_sessions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customer_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
