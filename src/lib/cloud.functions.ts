@@ -39,6 +39,8 @@ export const adminLogin = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { ok, priv } = await checkAdmin(data);
     if (!ok) return { ok: false as const };
+    const { issueSession } = await import('./customer.server');
+    await issueSession(null, true);
     return { ok: true as const, admins: (priv?.admins as unknown as Admin[] | undefined) ?? null, sheetSync: (priv?.sheetSync as { [k: string]: Json } | undefined) ?? null };
   });
 
