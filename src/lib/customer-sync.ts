@@ -25,6 +25,7 @@ export async function signOutCustomer() {
 }
 export async function flushCustomerChanges() { await pending; }
 export async function refreshCustomer() {
+  if (location.pathname.startsWith('/admin')) return;
   const version = revision;
   const remote = await customerState();
   if (version === revision) apply(remote.customer, remote.orders);
@@ -47,6 +48,8 @@ export function startCustomerSync() {
 }
 export async function refreshAdminActivity() {
   const remote = await adminCustomerActivity();
+  const s0 = store.get();
+  if (JSON.stringify(s0.customers) === JSON.stringify(remote.customers) && JSON.stringify(s0.orders) === JSON.stringify(remote.orders)) return;
   applying = true;
   try { store.set(s => ({ ...s, customers: remote.customers, orders: remote.orders })); }
   finally { applying = false; }

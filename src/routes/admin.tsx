@@ -39,7 +39,8 @@ function AdminPage() {
   const [err, setErr] = useState("");
   useEffect(() => {
     if (!authed) return;
-    const refresh = () => { void refreshAdminActivity().catch(() => toast.error("Could not load customer activity")); };
+    let failed = false;
+    const refresh = () => { void refreshAdminActivity().then(() => { failed = false; }).catch(() => { if (!failed) toast.error("Could not load customer activity", { description: "Please sign in to Admin again." }); failed = true; }); };
     refresh(); const timer = window.setInterval(refresh, 4000);
     return () => window.clearInterval(timer);
   }, [authed]);
