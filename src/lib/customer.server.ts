@@ -21,7 +21,7 @@ export async function issueSession(customerId: string | null, admin = false) {
   const sb = await database();
   const { error } = await sb.from('shop_sessions').insert({ token_hash: await digest(token), customer_id: customerId, is_admin: admin, expires_at: new Date(Date.now() + 7 * 86400000).toISOString() });
   if (error) throw new Error('Could not sign in');
-  setCookie(admin ? 'shop_admin' : 'shop_customer', token, { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 7 * 86400 });
+  setCookie(admin ? 'shop_admin' : 'shop_customer', token, { httpOnly: true, secure: true, sameSite: 'none', path: '/', maxAge: 7 * 86400 });
 }
 
 export async function requireSession(admin = false) {
@@ -37,7 +37,7 @@ export async function requireSession(admin = false) {
 export async function clearCustomerSession() {
   const token = getCookie('shop_customer');
   if (token) { const sb = await database(); await sb.from('shop_sessions').delete().eq('token_hash', await digest(token)); }
-  deleteCookie('shop_customer', { path: '/' });
+  deleteCookie('shop_customer', { path: '/', secure: true, sameSite: 'none' });
 }
 
 export function assertWriteOrigin() {
