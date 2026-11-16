@@ -8,6 +8,8 @@ let pending: Promise<unknown> = Promise.resolve();
 let started = false;
 let revision = 0;
 function apply(customer: Customer, orders?: ReturnType<typeof store.get>['orders']) {
+  const cur = store.get();
+  if (cur.currentCustomerId === customer.id && JSON.stringify(cur.customers) === JSON.stringify([customer]) && (!orders || JSON.stringify(cur.orders) === JSON.stringify(orders))) return;
   applying = true;
   try { store.set(s => ({ ...s, customers: [customer], currentCustomerId: customer.id, orders: orders ?? s.orders })); }
   finally { applying = false; }
