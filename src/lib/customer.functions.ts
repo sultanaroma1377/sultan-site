@@ -71,7 +71,10 @@ export const checkoutCustomer = createServerFn({ method: 'POST' }).inputValidato
   if (!items.length) throw new Error('Your cart is empty');
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const coupon = (shop.coupons ?? []).find(c => c.code.trim().toLowerCase() === data.couponCode.trim().toLowerCase() && subtotal >= Number(c.minAmount));
-  const order: ConfirmedOrder = { id: crypto.randomUUID(), customerId: session.customer_id ?? '', items, total: Math.max(0, subtotal - Number(coupon?.discount ?? 0)), address: data.address, receiverName: data.receiverName, receiverPhone: data.receiverPhone, status: 'pending', createdAt: Date.now() };
+  let orderNo = '';
+  for (let i = 0; i < 10 && !orderNo; i++) { const n = 'WS' + String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0'); const dup = await sb.from('customer_orders').select('id').eq('data->>orderNo', n).limit(1); if (!dup.data?.length) orderNo = n; }
+  if (!orderNo) throw new Error('Could not create order number');
+  const order: ConfirmedOrder = { orderNo, id: crypto.randomUUID(), customerId: session.customer_id ?? '', items, total: Math.max(0, subtotal - Number(coupon?.discount ?? 0)), address: data.address, receiverName: data.receiverName, receiverPhone: data.receiverPhone, status: 'pending', createdAt: Date.now() };
   const { error } = await sb.from('customer_orders').insert({ id: order.id, customer_id: order.customerId, data: order as never });
   if (error) throw new Error('Order not placed');
   const updated = { ...cart, cart: cart.cart.filter(i => i.savedForLater), addresses: cart.addresses.some(a => a.id === data.address.id) ? cart.addresses : [...cart.addresses, data.address] };
@@ -92,7 +95,7 @@ export const acceptCustomerOrder = createServerFn({ method: 'POST' }).inputValid
   const h = await import('./customer.server'); await h.assertWriteOrigin(); await h.requireSession(true); const sb = await h.database();
   const row = await sb.from('customer_orders').select('data').eq('id', data.id).single();
   if (!row.data) throw new Error('Order not found');
-  const order = { ...(row.data.data as unknown as ConfirmedOrder), status: 'accepted' as const };
+  const order = { ...(row.data.data as unknown as ConfirmedOrder), status: 'accepted' as const, acceptedAt: Date.now() };
   const result = await sb.from('customer_orders').update({ data: order as never }).eq('id', data.id);
   if (result.error) throw new Error('Order not accepted'); return order;
 });
