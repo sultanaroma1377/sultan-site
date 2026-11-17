@@ -91,11 +91,16 @@ export const adminCustomerActivity = createServerFn({ method: 'GET' }).handler(a
   return { customers: customers.data.map(c => ({ id: c.id, username: c.username, password: '', ...shopping.parse(c.data) })), orders: orders.data.map(o => o.data as unknown as ConfirmedOrder) };
 });
 
-export const acceptCustomerOrder = createServerFn({ method: 'POST' }).inputValidator(d => z.object({ id: z.string().uuid() }).parse(d)).handler(async ({ data }) => {
+export const updateCustomerOrder = createServerFn({ method: 'POST' }).inputValidator(d => z.object({ id: z.string().uuid(), action: z.enum(['accept', 'reject', 'dispatch', 'courier']), courierName: z.string().trim().max(100).optional(), courierNo: z.string().trim().max(100).optional() }).parse(d)).handler(async ({ data }) => {
   const h = await import('./customer.server'); await h.assertWriteOrigin(); await h.requireSession(true); const sb = await h.database();
   const row = await sb.from('customer_orders').select('data').eq('id', data.id).single();
   if (!row.data) throw new Error('Order not found');
-  const order = { ...(row.data.data as unknown as ConfirmedOrder), status: 'accepted' as const, acceptedAt: Date.now() };
+  const cur = row.data.data as unknown as ConfirmedOrder; const now = Date.now();
+  let order: ConfirmedOrder;
+  if (data.action === 'accept') { if (cur.status !== 'pending' && cur.status !== 'rejected') throw new Error('Order cannot be accepted'); order = { ...cur, status: 'accepted', acceptedAt: now }; }
+  else if (data.action === 'reject') { if (cur.status !== 'pending' && cur.status !== 'accepted') throw new Error('Order cannot be rejected'); order = { ...cur, status: 'rejected', rejectedAt: now }; }
+  else if (data.action === 'dispatch') { if (cur.status !== 'accepted') throw new Error('Only accepted orders can be dispatched'); order = { ...cur, status: 'dispatched', dispatchedAt: now }; }
+  else { if (cur.status !== 'dispatched') throw new Error('Courier details need a dispatched order'); if (!data.courierName || !data.courierNo) throw new Error('Enter courier name and number'); order = { ...cur, courierName: data.courierName, courierNo: data.courierNo }; }
   const result = await sb.from('customer_orders').update({ data: order as never }).eq('id', data.id);
-  if (result.error) throw new Error('Order not accepted'); return order;
+  if (result.error) throw new Error('Order not updated'); return order;
 });

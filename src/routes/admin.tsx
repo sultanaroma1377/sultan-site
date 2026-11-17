@@ -10,7 +10,7 @@ import type { Product, ConfirmedOrder } from "@/lib/types";
 import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
 import { productGroups } from "@/lib/product-groups";
 import { refreshAdminActivity } from "@/lib/customer-sync";
-import { acceptCustomerOrder } from "@/lib/customer.functions";
+import { updateCustomerOrder } from "@/lib/customer.functions";
 import { adminSignIn } from "@/lib/cloud-sync";
 
 function shrinkImage(file: File, max = 900): Promise<string> {
@@ -450,6 +450,20 @@ function CustomersTab() {
         {sel && (
           <div className="space-y-4">
             <section>
+              <h4 className="font-serif text-lg">Order history</h4>
+              <ul className="mt-2 space-y-2 text-sm">
+                {allOrders.filter((o) => o.customerId === sel.id).sort((a, b) => b.createdAt - a.createdAt).map((o) => (
+                  <li key={o.id} className="rounded-md border p-2">
+                    <div className="flex justify-between gap-2"><span className="font-medium">#{o.orderNo ?? o.id.slice(0, 8)}</span><span className="capitalize">{o.status}</span></div>
+                    <div className="text-muted-foreground">{new Date(o.createdAt).toLocaleString()} · ₹{o.total.toLocaleString("en-IN")}</div>
+                    <div>{o.items.map((i) => `${i.name} × ${i.qty}`).join(", ")}</div>
+                    {o.courierName && <div className="text-muted-foreground">Courier: {o.courierName} · {o.courierNo}</div>}
+                  </li>
+                ))}
+                {!allOrders.some((o) => o.customerId === sel.id) && <li className="text-muted-foreground">No orders yet.</li>}
+              </ul>
+            </section>
+            <section>
               <h4 className="font-serif text-lg">Favorites</h4>
               <ul className="mt-2 text-sm">
                 {sel.favorites.map((pid) => {
@@ -541,6 +555,12 @@ function OrdersTab() {
   const site = useStore((s) => s.site);
   const customers = useStore((s) => s.customers);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [filter, setFilter] = useState<"all" | "accepted" | "pending" | "dispatched">("all");
+  const [courier, setCourier] = useState<Record<string, { name: string; no: string }>>({});
+  const shown = orders.filter((o) => filter === "all" ? true : filter === "pending" ? o.status === "pending" || o.status === "rejected" : o.status === filter);
+  const act = (id: string, action: "accept" | "reject" | "dispatch" | "courier", extra: { courierName?: string; courierNo?: string } = {}) => {
+    void updateCustomerOrder({ data: { id, action, ...extra } }).then(refreshAdminActivity).then(() => toast.success("Order updated")).catch((e: Error) => toast.error(e.message || "Could not update order"));
+  };
 
   const toggle = (id: string) => {
     const next = new Set(selected);
@@ -602,10 +622,15 @@ function OrdersTab() {
         <Button onClick={() => printCombinedA4(true)} disabled={selected.size === 0}>Print selected ({selected.size}) A4</Button>
         <Button variant="outline" onClick={() => printCombinedA4(false)} disabled={selected.size === 0}>Download selected ({selected.size}) A4</Button>
       </div>
-      <Card title={`Confirmed orders (${orders.length})`}>
-        {orders.length === 0 && <p className="text-sm text-muted-foreground">No confirmed orders yet.</p>}
+      <div className="flex flex-wrap gap-2">
+        {([["all", "All"], ["accepted", "Accepted"], ["pending", "Non accepted"], ["dispatched", "Dispatched"]] as const).map(([k, label]) => (
+          <Button key={k} size="sm" variant={filter === k ? "default" : "outline"} onClick={() => setFilter(k)}>{label} ({orders.filter((o) => k === "all" ? true : k === "pending" ? o.status === "pending" || o.status === "rejected" : o.status === k).length})</Button>
+        ))}
+      </div>
+      <Card title={`Confirmed orders (${shown.length})`}>
+        {shown.length === 0 && <p className="text-sm text-muted-foreground">No orders here.</p>}
         <div className="space-y-3">
-          {orders.map((o) => {
+          {shown.map((o) => {
             const cust = customers.find((c) => c.id === o.customerId);
             return (
               <div key={o.id} className="rounded-md border p-4">
@@ -614,7 +639,7 @@ function OrdersTab() {
                     <input type="checkbox" className="mt-1" checked={selected.has(o.id)} onChange={() => toggle(o.id)} />
                     <div>
                       <div className="font-medium">Order #{o.orderNo ?? o.id} · {cust?.username ?? "—"}</div>
-                      <div className="text-sm text-muted-foreground">{new Date(o.createdAt).toLocaleString()} · ₹{o.total.toLocaleString("en-IN")} · <span className={o.status === "accepted" ? "text-accent" : "text-muted-foreground"}>{o.status}</span></div>
+                      <div className="text-sm text-muted-foreground">{new Date(o.createdAt).toLocaleString()} · ₹{o.total.toLocaleString("en-IN")} · <span className="font-medium capitalize">{o.status}</span></div>
                       <div className="mt-2 text-sm">To: {o.receiverName} ({o.receiverPhone})</div>
                       <div className="text-sm">{o.address.line1}, {o.address.city}, {o.address.state} - {o.address.pincode}</div>
                       <ul className="mt-2 text-sm text-muted-foreground">
@@ -623,8 +648,16 @@ function OrdersTab() {
                     </div>
                   </label>
                   <div className="flex flex-col gap-2">
-                    {o.status !== "accepted" && (
-                      <Button size="sm" onClick={() => { void acceptCustomerOrder({ data: { id: o.id } }).then(refreshAdminActivity).catch(() => toast.error("Could not accept order")); }}>Accept</Button>
+                    {(o.status === "pending" || o.status === "rejected") && <Button size="sm" onClick={() => act(o.id, "accept")}>Accept</Button>}
+                    {(o.status === "pending" || o.status === "accepted") && <Button size="sm" variant="destructive" onClick={() => act(o.id, "reject")}>Reject</Button>}
+                    {o.status === "accepted" && <Button size="sm" onClick={() => act(o.id, "dispatch")}>Mark dispatched</Button>}
+                    {o.status === "dispatched" && (
+                      <div className="flex flex-col gap-1">
+                        {o.courierName && <span className="text-xs">Courier: {o.courierName} · {o.courierNo}</span>}
+                        <input className="rounded-md border bg-background px-2 py-1 text-xs" placeholder="Courier name" value={courier[o.id]?.name ?? o.courierName ?? ""} onChange={(e) => setCourier({ ...courier, [o.id]: { name: e.target.value, no: courier[o.id]?.no ?? o.courierNo ?? "" } })} />
+                        <input className="rounded-md border bg-background px-2 py-1 text-xs" placeholder="Tracking no." value={courier[o.id]?.no ?? o.courierNo ?? ""} onChange={(e) => setCourier({ ...courier, [o.id]: { name: courier[o.id]?.name ?? o.courierName ?? "", no: e.target.value } })} />
+                        <Button size="sm" onClick={() => act(o.id, "courier", { courierName: courier[o.id]?.name ?? o.courierName, courierNo: courier[o.id]?.no ?? o.courierNo })}>Save courier</Button>
+                      </div>
                     )}
                     <Button size="sm" variant="outline" onClick={() => printSingleA5(o, true)}>Print A5</Button>
                     <Button size="sm" variant="outline" onClick={() => printSingleA5(o)}>Download A5</Button>

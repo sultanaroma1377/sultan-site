@@ -43,10 +43,14 @@ export type ConfirmedOrder = {
   address: Address;
   receiverName: string;
   receiverPhone: string;
-  status: "pending" | "accepted";
+  status: "pending" | "accepted" | "rejected" | "dispatched";
   createdAt: number;
   orderNo?: string;
   acceptedAt?: number;
+  rejectedAt?: number;
+  dispatchedAt?: number;
+  courierName?: string;
+  courierNo?: string;
 };
 
 export type Admin = { username: string; password: string };
