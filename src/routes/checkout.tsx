@@ -49,7 +49,7 @@ function CheckoutPage() {
   );
 
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
-  const appliedCoupon = coupons.find((c) => c.code.toLowerCase() === couponCode.toLowerCase() && subtotal >= c.minAmount);
+  const appliedCoupon = coupons.find((c) => c.code.trim().toLowerCase() === couponCode.trim().toLowerCase() && subtotal >= c.minAmount);
   const total = Math.max(0, subtotal - (appliedCoupon?.discount ?? 0));
 
   if (!current) return <div className="p-12 text-center">Please login.</div>;
@@ -72,7 +72,7 @@ function CheckoutPage() {
     setBusy(true);
     try {
       await flushCustomerChanges();
-      await checkoutCustomer({ data: { address, receiverName: receiver.name, receiverPhone: receiver.phone, couponCode } });
+      await checkoutCustomer({ data: { address, receiverName: receiver.name, receiverPhone: receiver.phone, couponCode: couponCode.trim() } });
       await refreshCustomer();
       setStep("done");
     } catch (error) { toast.error(error instanceof Error ? error.message : "Order could not be placed"); }
