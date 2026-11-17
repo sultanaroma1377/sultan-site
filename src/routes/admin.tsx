@@ -591,7 +591,7 @@ function OrdersTab() {
         pdf.line(5, halfH, pageW - 5, halfH);
         pdf.setLineDashPattern([], 0);
       }
-      drawAddress(pdf, o, site, 10, yOffset + 10);
+      drawAddress(pdf, o, site, 10, yOffset + 10, qrs.get(o.id));
     });
     output(pdf, `addresses-combined.pdf`, direct);
   };
