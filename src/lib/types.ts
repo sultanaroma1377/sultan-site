@@ -45,6 +45,8 @@ export type ConfirmedOrder = {
   receiverPhone: string;
   status: "pending" | "accepted";
   createdAt: number;
+  orderNo?: string;
+  acceptedAt?: number;
 };
 
 export type Admin = { username: string; password: string };

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import QRCode from "qrcode";
 import type { Product, ConfirmedOrder } from "@/lib/types";
 import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
 import { productGroups } from "@/lib/product-groups";
@@ -558,13 +559,24 @@ function OrdersTab() {
     document.body.appendChild(frame);
   };
 
-  const printSingleA5 = (o: ConfirmedOrder, direct = false) => {
+  const qrFor = (o: ConfirmedOrder) => QRCode.toDataURL([
+    `Order: ${o.orderNo ?? o.id}`,
+    `Customer: ${customers.find((c) => c.id === o.customerId)?.username ?? "-"}`,
+    `Receiver: ${o.receiverName}`,
+    `Number: ${o.receiverPhone}`,
+    `Items: ${o.items.map((i) => `${i.name} x${i.qty}`).join(", ")}`,
+    `Confirmed: ${new Date(o.acceptedAt ?? o.createdAt).toLocaleString("en-IN")}`,
+  ].join("\n"), { margin: 1, width: 300 });
+
+  const printSingleA5 = async (o: ConfirmedOrder, direct = false) => {
     const pdf = new jsPDF({ unit: "mm", format: "a5" });
-    drawAddress(pdf, o, site, 10, 10);
+    drawAddress(pdf, o, site, 10, 10, await qrFor(o));
     output(pdf, `address-${o.id}.pdf`, direct);
   };
 
-  const printCombinedA4 = (direct = false) => {
+  const printCombinedA4 = async (direct = false) => {
+    const qrs = new Map<string, string>();
+    for (const o of orders.filter((x) => selected.has(x.id))) qrs.set(o.id, await qrFor(o));
     const list = orders.filter((o) => selected.has(o.id));
     if (list.length === 0) { toast.error("Select orders first"); return; }
     const pdf = new jsPDF({ unit: "mm", format: "a4" });
@@ -579,7 +591,7 @@ function OrdersTab() {
         pdf.line(5, halfH, pageW - 5, halfH);
         pdf.setLineDashPattern([], 0);
       }
-      drawAddress(pdf, o, site, 10, yOffset + 10);
+      drawAddress(pdf, o, site, 10, yOffset + 10, qrs.get(o.id));
     });
     output(pdf, `addresses-combined.pdf`, direct);
   };
@@ -601,7 +613,7 @@ function OrdersTab() {
                   <label className="flex items-start gap-3">
                     <input type="checkbox" className="mt-1" checked={selected.has(o.id)} onChange={() => toggle(o.id)} />
                     <div>
-                      <div className="font-medium">Order #{o.id} · {cust?.username ?? "—"}</div>
+                      <div className="font-medium">Order #{o.orderNo ?? o.id} · {cust?.username ?? "—"}</div>
                       <div className="text-sm text-muted-foreground">{new Date(o.createdAt).toLocaleString()} · ₹{o.total.toLocaleString("en-IN")} · <span className={o.status === "accepted" ? "text-accent" : "text-muted-foreground"}>{o.status}</span></div>
                       <div className="mt-2 text-sm">To: {o.receiverName} ({o.receiverPhone})</div>
                       <div className="text-sm">{o.address.line1}, {o.address.city}, {o.address.state} - {o.address.pincode}</div>
@@ -627,7 +639,8 @@ function OrdersTab() {
   );
 }
 
-function drawAddress(pdf: jsPDF, o: ConfirmedOrder, site: { name: string; address: string; phone?: string }, x: number, y: number) {
+function drawAddress(pdf: jsPDF, o: ConfirmedOrder, site: { name: string; address: string; phone?: string }, x: number, y: number, qr?: string) {
+  if (qr) pdf.addImage(qr, "PNG", x + 92, y + 38, 34, 34);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(11);
   pdf.text("FROM:", x, y);
@@ -647,9 +660,9 @@ function drawAddress(pdf: jsPDF, o: ConfirmedOrder, site: { name: string; addres
   pdf.text(o.receiverName, x, ty + 6);
   pdf.setFontSize(10);
   pdf.text(o.receiverPhone, x, ty + 12);
-  const toLines = pdf.splitTextToSize(`${o.address.line1}, ${o.address.city}, ${o.address.state} - ${o.address.pincode}`, 120);
+  const toLines = pdf.splitTextToSize(`${o.address.line1}, ${o.address.city}, ${o.address.state} - ${o.address.pincode}`, qr ? 88 : 120);
   pdf.text(toLines, x, ty + 18);
 
   pdf.setFontSize(8);
-  pdf.text(`Order #${o.id}`, x, ty + 18 + toLines.length * 5 + 6);
+  pdf.text(`Order #${o.orderNo ?? o.id}`, x, ty + 18 + toLines.length * 5 + 6);
 }
