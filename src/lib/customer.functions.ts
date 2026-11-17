@@ -70,8 +70,8 @@ export const checkoutCustomer = createServerFn({ method: 'POST' }).inputValidato
   const items = cart.cart.filter(i => !i.savedForLater).map(i => { const p = shop.products.find(p => p.id === i.productId); if (!p) throw new Error('An item is no longer available'); return { productId: p.id, name: p.name, price: p.price, qty: i.qty }; });
   if (!items.length) throw new Error('Your cart is empty');
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const coupon = shop.coupons.find(c => c.code.toLowerCase() === data.couponCode.toLowerCase() && subtotal >= c.minAmount);
-  const order: ConfirmedOrder = { id: crypto.randomUUID(), customerId: session.customer_id ?? '', items, total: Math.max(0, subtotal - (coupon?.discount ?? 0)), address: data.address, receiverName: data.receiverName, receiverPhone: data.receiverPhone, status: 'pending', createdAt: Date.now() };
+  const coupon = (shop.coupons ?? []).find(c => c.code.trim().toLowerCase() === data.couponCode.trim().toLowerCase() && subtotal >= Number(c.minAmount));
+  const order: ConfirmedOrder = { id: crypto.randomUUID(), customerId: session.customer_id ?? '', items, total: Math.max(0, subtotal - Number(coupon?.discount ?? 0)), address: data.address, receiverName: data.receiverName, receiverPhone: data.receiverPhone, status: 'pending', createdAt: Date.now() };
   const { error } = await sb.from('customer_orders').insert({ id: order.id, customer_id: order.customerId, data: order as never });
   if (error) throw new Error('Order not placed');
   const updated = { ...cart, cart: cart.cart.filter(i => i.savedForLater), addresses: cart.addresses.some(a => a.id === data.address.id) ? cart.addresses : [...cart.addresses, data.address] };

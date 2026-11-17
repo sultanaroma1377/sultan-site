@@ -196,7 +196,7 @@ function ProductsTab() {
     if (editing) {
       store.set((s) => ({ ...s, products: s.products.map((p) => p.id === editing ? { ...p, ...draft } : p) }));
     } else {
-      store.set((s) => ({ ...s, products: [...s.products, { id: Math.random().toString(36).slice(2, 10), ...draft }] }));
+      store.set((s) => ({ ...s, products: [...s.products, { id: Math.random().toString(36).slice(2, 10), ...draft, code: draft.code.trim().toUpperCase() }] }));
     }
     setDraft({ name: "", price: 0, description: "", category: "" });
     setEditing(null);
@@ -511,8 +511,8 @@ function CouponsTab() {
           <input type="number" className="rounded-md border bg-background px-3 py-2 text-sm" placeholder="Discount amount (₹)" value={draft.discount || ""} onChange={(e) => setDraft({ ...draft, discount: Number(e.target.value) })} />
         </div>
         <Button className="mt-3" onClick={() => {
-          if (!draft.code) return;
-          store.set((s) => ({ ...s, coupons: [...s.coupons, { id: Math.random().toString(36).slice(2, 10), ...draft }] }));
+          if (!draft.code.trim() || draft.discount <= 0) { toast.error("Enter a code and a discount amount"); return; }
+          store.set((s) => ({ ...s, coupons: [...s.coupons, { id: Math.random().toString(36).slice(2, 10), ...draft, code: draft.code.trim().toUpperCase() }] }));
           setDraft({ code: "", minAmount: 0, discount: 0 });
           toast.success("Coupon created");
         }}>Add coupon</Button>
@@ -547,13 +547,24 @@ function OrdersTab() {
     setSelected(next);
   };
 
-  const printSingleA5 = (o: ConfirmedOrder) => {
-    const pdf = new jsPDF({ unit: "mm", format: "a5" });
-    drawAddress(pdf, o, site, 10, 10);
-    pdf.save(`address-${o.id}.pdf`);
+  const output = (pdf: jsPDF, name: string, direct: boolean) => {
+    if (!direct) { pdf.save(name); return; }
+    pdf.autoPrint();
+    const url = URL.createObjectURL(pdf.output("blob"));
+    const frame = document.createElement("iframe");
+    frame.style.position = "fixed"; frame.style.width = "0"; frame.style.height = "0"; frame.style.border = "0";
+    frame.src = url;
+    frame.onload = () => { try { frame.contentWindow?.focus(); frame.contentWindow?.print(); } catch { window.open(url, "_blank"); } setTimeout(() => { frame.remove(); URL.revokeObjectURL(url); }, 60000); };
+    document.body.appendChild(frame);
   };
 
-  const printCombinedA4 = () => {
+  const printSingleA5 = (o: ConfirmedOrder, direct = false) => {
+    const pdf = new jsPDF({ unit: "mm", format: "a5" });
+    drawAddress(pdf, o, site, 10, 10);
+    output(pdf, `address-${o.id}.pdf`, direct);
+  };
+
+  const printCombinedA4 = (direct = false) => {
     const list = orders.filter((o) => selected.has(o.id));
     if (list.length === 0) { toast.error("Select orders first"); return; }
     const pdf = new jsPDF({ unit: "mm", format: "a4" });
@@ -570,13 +581,14 @@ function OrdersTab() {
       }
       drawAddress(pdf, o, site, 10, yOffset + 10);
     });
-    pdf.save(`addresses-combined.pdf`);
+    output(pdf, `addresses-combined.pdf`, direct);
   };
 
   return (
     <div className="mt-6 space-y-4">
       <div className="flex items-center gap-2">
-        <Button onClick={printCombinedA4} disabled={selected.size === 0}>Print selected ({selected.size}) as A4 combined</Button>
+        <Button onClick={() => printCombinedA4(true)} disabled={selected.size === 0}>Print selected ({selected.size}) A4</Button>
+        <Button variant="outline" onClick={() => printCombinedA4(false)} disabled={selected.size === 0}>Download selected ({selected.size}) A4</Button>
       </div>
       <Card title={`Confirmed orders (${orders.length})`}>
         {orders.length === 0 && <p className="text-sm text-muted-foreground">No confirmed orders yet.</p>}
@@ -602,7 +614,8 @@ function OrdersTab() {
                     {o.status !== "accepted" && (
                       <Button size="sm" onClick={() => { void acceptCustomerOrder({ data: { id: o.id } }).then(refreshAdminActivity).catch(() => toast.error("Could not accept order")); }}>Accept</Button>
                     )}
-                    <Button size="sm" variant="outline" onClick={() => printSingleA5(o)}>Print A5</Button>
+                    <Button size="sm" variant="outline" onClick={() => printSingleA5(o, true)}>Print A5</Button>
+                    <Button size="sm" variant="outline" onClick={() => printSingleA5(o)}>Download A5</Button>
                   </div>
                 </div>
               </div>
