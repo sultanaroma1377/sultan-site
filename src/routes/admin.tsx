@@ -196,7 +196,7 @@ function ProductsTab() {
     if (editing) {
       store.set((s) => ({ ...s, products: s.products.map((p) => p.id === editing ? { ...p, ...draft } : p) }));
     } else {
-      store.set((s) => ({ ...s, products: [...s.products, { id: Math.random().toString(36).slice(2, 10), ...draft, code: draft.code.trim().toUpperCase() }] }));
+      store.set((s) => ({ ...s, products: [...s.products, { id: Math.random().toString(36).slice(2, 10), ...draft }] }));
     }
     setDraft({ name: "", price: 0, description: "", category: "" });
     setEditing(null);
