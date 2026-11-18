@@ -7,7 +7,7 @@ import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { addCart, toggleFav } from "@/components/ProductCard";
 import { useProductImage, useStore } from "@/lib/store";
-import { RatingLine } from "@/lib/ratings";
+import { ProductReviews, RatingLine } from "@/lib/ratings";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -103,6 +103,7 @@ function ProductPage() {
               <Link to="/products" search={{ q: "" }} className="mt-6 inline-block text-sm text-primary hover:underline">
                 ← Back to all perfumes
               </Link>
+              <ProductReviews productId={product.id} />
             </div>
           </div>
         )}

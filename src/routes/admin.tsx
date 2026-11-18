@@ -12,6 +12,7 @@ import { productGroups } from "@/lib/product-groups";
 import { refreshAdminActivity } from "@/lib/customer-sync";
 import { updateCustomerOrder } from "@/lib/customer.functions";
 import { adminSignIn } from "@/lib/cloud-sync";
+import { scannedOrderNumber } from "@/lib/review-rules";
 
 function shrinkImage(file: File, max = 900): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -627,13 +628,13 @@ function OrdersTab() {
 
   return (
     <div className="mt-6 space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button onClick={() => printCombinedA4(true)} disabled={selected.size === 0}>Print selected ({selected.size}) A4</Button>
         <Button variant="outline" onClick={() => printCombinedA4(false)} disabled={selected.size === 0}>Download selected ({selected.size}) A4</Button>
         <Button variant="outline" onClick={() => dispatchMany([...selected])} disabled={selected.size === 0}>Add to dispatch ({selected.size})</Button>
-        <Button variant="outline" onClick={() => setScanning(v => !v)}>{scanning ? "Stop scan" : "Scan QR to dispatch"}</Button>
+        <Button variant="outline" onClick={() => setScanning(v => !v)}>{scanning ? "Close scanner" : "External scanner"}</Button>
       </div>
-      {scanning && <QrDispatch onCode={(text) => { const no = /Order:\s*(\S+)/.exec(text)?.[1]; const o = orders.find((x) => x.orderNo === no || x.id === no); if (!o) { toast.error("Order not found in QR"); return; } void dispatchMany([o.id]); }} />}
+      {scanning && <QrDispatch onCode={async (text) => { const no = scannedOrderNumber(text); const o = orders.find((x) => x.orderNo?.toUpperCase() === no || x.id.toUpperCase() === no); if (!o) { toast.error("Order not found in QR"); return; } await dispatchMany([o.id]); }} />}
       <div className="hidden">
       </div>
       <div className="flex flex-wrap gap-2">
@@ -714,16 +715,19 @@ function drawAddress(pdf: jsPDF, o: ConfirmedOrder, site: { name: string; addres
   pdf.text(`Order #${o.orderNo ?? o.id}`, x, ty + 18 + toLines.length * 5 + 6);
 }
 
-function QrDispatch({ onCode }: { onCode: (text: string) => void }) {
-  const cb = useRef(onCode); cb.current = onCode;
-  useEffect(() => {
-    let stop: (() => Promise<void>) | undefined; let last = ""; let lastAt = 0;
-    void import("html5-qrcode").then(async ({ Html5Qrcode }) => {
-      const q = new Html5Qrcode("qr-dispatch-reader");
-      await q.start({ facingMode: "environment" }, { fps: 8, qrbox: 240 }, (text) => { const now = Date.now(); if (text === last && now - lastAt < 4000) return; last = text; lastAt = now; cb.current(text); }, () => undefined);
-      stop = () => q.stop();
-    }).catch(() => toast.error("Camera not available"));
-    return () => { void stop?.().catch(() => undefined); };
-  }, []);
-  return <div className="rounded-lg border bg-card p-3"><p className="mb-2 text-sm text-muted-foreground">Point the camera at a label QR — the order is marked dispatched.</p><div id="qr-dispatch-reader" className="mx-auto max-w-sm" /></div>;
+function QrDispatch({ onCode }: { onCode: (text: string) => Promise<void> }) {
+  const input = useRef<HTMLTextAreaElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const busy = useRef(false);
+  const [working, setWorking] = useState(false);
+  const submit = async () => {
+    clearTimeout(timer.current);
+    const text = input.current?.value.trim();
+    if (!text || busy.current) return;
+    busy.current = true; setWorking(true);
+    try { await onCode(text); }
+    finally { busy.current = false; setWorking(false); if (input.current) { input.current.value = ''; input.current.focus(); } }
+  };
+  useEffect(() => { input.current?.focus(); return () => clearTimeout(timer.current); }, []);
+  return <form onSubmit={e => { e.preventDefault(); void submit(); }} className="space-y-3 rounded-lg border bg-card p-4"><label htmlFor="dispatch-scan" className="block text-sm font-medium">Scan order QR / order number</label><textarea id="dispatch-scan" ref={input} rows={3} disabled={working} className="w-full rounded-md border bg-background px-3 py-2 text-sm" onChange={() => { clearTimeout(timer.current); timer.current = setTimeout(() => { void submit(); }, 350); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(timer.current); timer.current = setTimeout(() => { void submit(); }, 350); } }} /><Button type="submit" disabled={working}>{working ? 'Dispatching…' : 'Add to dispatch'}</Button></form>;
 }

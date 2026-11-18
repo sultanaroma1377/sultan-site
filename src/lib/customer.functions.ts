@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import type { Customer, ConfirmedOrder } from './types';
+import { saveReview, summarizeReviews } from './review-rules';
 
 const credentials = z.object({ username: z.string().trim().min(1).max(64).regex(/^[a-zA-Z0-9_.-]+$/), password: z.string().min(6).max(128), signup: z.boolean() });
 const address = z.object({ id: z.string(), line1: z.string().min(1).max(300), pincode: z.string().regex(/^\d{6}$/), state: z.string().min(1).max(100), city: z.string().min(1).max(100) });
@@ -105,14 +106,15 @@ export const updateCustomerOrder = createServerFn({ method: 'POST' }).inputValid
   if (result.error) throw new Error('Order not updated'); return order;
 });
 
-export const rateOrderItem = createServerFn({ method: 'POST' }).inputValidator(d => z.object({ orderId: z.string().uuid(), productId: z.string().min(1), stars: z.number().int().min(1).max(5) }).parse(d)).handler(async ({ data }) => {
+export const rateOrderItem = createServerFn({ method: 'POST' }).inputValidator(d => z.object({ orderId: z.string().uuid(), productId: z.string().min(1), stars: z.number().int().min(1).max(5), text: z.string().trim().min(1).max(2000) }).parse(d)).handler(async ({ data }) => {
   const h = await import('./customer.server'); await h.assertWriteOrigin(); const session = await h.requireSession(); const sb = await h.database();
   const row = await sb.from('customer_orders').select('data').eq('id', data.orderId).eq('customer_id', session.customer_id ?? '').single();
   if (!row.data) throw new Error('Order not found');
   const cur = row.data.data as unknown as ConfirmedOrder;
-  if (cur.status !== 'dispatched') throw new Error('You can rate after dispatch');
-  if (!cur.items.some(i => i.productId === data.productId)) throw new Error('Item not in order');
-  const order = { ...cur, ratings: { ...(cur.ratings ?? {}), [data.productId]: data.stars } };
+  const catalog = await sb.from('shop_data').select('data').eq('key', 'catalog').single();
+  if (catalog.error) throw new Error('Could not load perfumes');
+  const products = (catalog.data.data as unknown as { products: import('./types').Product[] }).products;
+  const order = saveReview(cur, products, data.productId, data.stars, data.text);
   const r = await sb.from('customer_orders').update({ data: order as never }).eq('id', data.orderId);
   if (r.error) throw new Error('Rating not saved'); return order;
 });
@@ -121,7 +123,7 @@ export const productRatings = createServerFn({ method: 'GET' }).handler(async ()
   const h = await import('./customer.server'); const sb = await h.database();
   const { data, error } = await sb.from('customer_orders').select('data');
   if (error) throw new Error('Could not load ratings');
-  const out: Record<string, { sum: number; count: number }> = {};
-  for (const row of data) for (const [pid, n] of Object.entries((row.data as unknown as ConfirmedOrder).ratings ?? {})) { const e = out[pid] ??= { sum: 0, count: 0 }; e.sum += n; e.count++; }
-  return out;
+  const catalog = await sb.from('shop_data').select('data').eq('key', 'catalog').single();
+  if (catalog.error) throw new Error('Could not load perfumes');
+  return summarizeReviews(data.map(row => row.data as unknown as ConfirmedOrder), (catalog.data.data as unknown as { products: import('./types').Product[] }).products);
 });

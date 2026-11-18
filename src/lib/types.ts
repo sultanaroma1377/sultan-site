@@ -52,6 +52,7 @@ export type ConfirmedOrder = {
   courierName?: string;
   courierNo?: string;
   ratings?: Record<string, number>;
+  reviews?: Record<string, { stars: number; text: string; createdAt: number }>;
 };
 
 export type Admin = { username: string; password: string };
