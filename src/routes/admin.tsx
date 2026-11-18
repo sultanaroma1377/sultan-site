@@ -433,6 +433,7 @@ function CustomersTab() {
   const customers = useStore((s) => s.customers);
   const products = useStore((s) => s.products);
   const [selected, setSelected] = useState<string | null>(null);
+  const allOrders = useStore((s) => s.orders);
   const sel = customers.find((c) => c.id === selected);
   return (
     <div className="mt-6 grid gap-4 md:grid-cols-[260px_1fr]">
