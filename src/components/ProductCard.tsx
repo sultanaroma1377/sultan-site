@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { store, useProductImage, useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
+import { RatingLine } from "@/lib/ratings";
 
 export function requireLogin() {
   if (!store.get().currentCustomerId) {
@@ -77,6 +78,7 @@ export function ProductCard({ product, variants = [product] }: { product: Produc
           {product.baseName ?? product.name}
         </Link>
         {product.parentId && <p className="text-xs text-on-gradient-muted">{variants.map(v => v.variantLabel).join(" · ")}</p>}
+        <RatingLine ids={variants.map(v => v.id)} className="text-on-gradient" />
         {product.description && <p className="line-clamp-2 text-xs text-on-gradient-muted">{product.description}</p>}
         <div className="mt-auto flex items-center justify-between pt-2">
           <span className="font-medium text-on-gradient">{product.parentId ? "From " : ""}₹{Math.min(...variants.map(v => v.price)).toLocaleString("en-IN")}</span>

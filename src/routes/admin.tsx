@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { store, useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -563,6 +563,14 @@ function OrdersTab() {
     void updateCustomerOrder({ data: { id, action, ...extra } }).then(refreshAdminActivity).then(() => toast.success("Order updated")).catch((e: Error) => toast.error(e.message || "Could not update order"));
   };
 
+  const [scanning, setScanning] = useState(false);
+  const dispatchMany = async (ids: string[]) => {
+    let ok = 0; const bad: string[] = [];
+    for (const id of ids) { const o = orders.find((x) => x.id === id); if (o?.status !== "accepted") { bad.push(o?.orderNo ?? id.slice(0, 8)); continue; } try { await updateCustomerOrder({ data: { id, action: "dispatch" } }); ok++; } catch { bad.push(o.orderNo ?? id.slice(0, 8)); } }
+    await refreshAdminActivity().catch(() => undefined); setSelected(new Set());
+    if (ok) toast.success(`${ok} order(s) dispatched`);
+    if (bad.length) toast.error(`Not dispatched (must be accepted first): ${bad.join(", ")}`);
+  };
   const toggle = (id: string) => {
     const next = new Set(selected);
     next.has(id) ? next.delete(id) : next.add(id);
@@ -622,6 +630,11 @@ function OrdersTab() {
       <div className="flex items-center gap-2">
         <Button onClick={() => printCombinedA4(true)} disabled={selected.size === 0}>Print selected ({selected.size}) A4</Button>
         <Button variant="outline" onClick={() => printCombinedA4(false)} disabled={selected.size === 0}>Download selected ({selected.size}) A4</Button>
+        <Button variant="outline" onClick={() => dispatchMany([...selected])} disabled={selected.size === 0}>Add to dispatch ({selected.size})</Button>
+        <Button variant="outline" onClick={() => setScanning(v => !v)}>{scanning ? "Stop scan" : "Scan QR to dispatch"}</Button>
+      </div>
+      {scanning && <QrDispatch onCode={(text) => { const no = /Order:\s*(\S+)/.exec(text)?.[1]; const o = orders.find((x) => x.orderNo === no || x.id === no); if (!o) { toast.error("Order not found in QR"); return; } void dispatchMany([o.id]); }} />}
+      <div className="hidden">
       </div>
       <div className="flex flex-wrap gap-2">
         {([["all", "All"], ["accepted", "Accepted"], ["pending", "Non accepted"], ["dispatched", "Dispatched"]] as const).map(([k, label]) => (
@@ -655,8 +668,8 @@ function OrdersTab() {
                     {o.status === "dispatched" && (
                       <div className="flex flex-col gap-1">
                         {o.courierName && <span className="text-xs">Courier: {o.courierName} · {o.courierNo}</span>}
-                        <input className="rounded-md border bg-background px-2 py-1 text-xs" placeholder="Courier name" value={courier[o.id]?.name ?? o.courierName ?? ""} onChange={(e) => setCourier({ ...courier, [o.id]: { name: e.target.value, no: courier[o.id]?.no ?? o.courierNo ?? "" } })} />
-                        <input className="rounded-md border bg-background px-2 py-1 text-xs" placeholder="Tracking no." value={courier[o.id]?.no ?? o.courierNo ?? ""} onChange={(e) => setCourier({ ...courier, [o.id]: { name: courier[o.id]?.name ?? o.courierName ?? "", no: e.target.value } })} />
+                        <input className="rounded-md border bg-background px-2 py-1 text-xs" placeholder="Courier name (optional)" value={courier[o.id]?.name ?? o.courierName ?? ""} onChange={(e) => setCourier({ ...courier, [o.id]: { name: e.target.value, no: courier[o.id]?.no ?? o.courierNo ?? "" } })} />
+                        <input className="rounded-md border bg-background px-2 py-1 text-xs" placeholder="Tracking no. (required)" value={courier[o.id]?.no ?? o.courierNo ?? ""} onChange={(e) => setCourier({ ...courier, [o.id]: { name: courier[o.id]?.name ?? o.courierName ?? "", no: e.target.value } })} />
                         <Button size="sm" onClick={() => act(o.id, "courier", { courierName: courier[o.id]?.name ?? o.courierName, courierNo: courier[o.id]?.no ?? o.courierNo })}>Save courier</Button>
                       </div>
                     )}
@@ -699,4 +712,18 @@ function drawAddress(pdf: jsPDF, o: ConfirmedOrder, site: { name: string; addres
 
   pdf.setFontSize(8);
   pdf.text(`Order #${o.orderNo ?? o.id}`, x, ty + 18 + toLines.length * 5 + 6);
+}
+
+function QrDispatch({ onCode }: { onCode: (text: string) => void }) {
+  const cb = useRef(onCode); cb.current = onCode;
+  useEffect(() => {
+    let stop: (() => Promise<void>) | undefined; let last = ""; let lastAt = 0;
+    void import("html5-qrcode").then(async ({ Html5Qrcode }) => {
+      const q = new Html5Qrcode("qr-dispatch-reader");
+      await q.start({ facingMode: "environment" }, { fps: 8, qrbox: 240 }, (text) => { const now = Date.now(); if (text === last && now - lastAt < 4000) return; last = text; lastAt = now; cb.current(text); }, () => undefined);
+      stop = () => q.stop();
+    }).catch(() => toast.error("Camera not available"));
+    return () => { void stop?.().catch(() => undefined); };
+  }, []);
+  return <div className="rounded-lg border bg-card p-3"><p className="mb-2 text-sm text-muted-foreground">Point the camera at a label QR — the order is marked dispatched.</p><div id="qr-dispatch-reader" className="mx-auto max-w-sm" /></div>;
 }

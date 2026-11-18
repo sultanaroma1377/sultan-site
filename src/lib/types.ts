@@ -51,6 +51,7 @@ export type ConfirmedOrder = {
   dispatchedAt?: number;
   courierName?: string;
   courierNo?: string;
+  ratings?: Record<string, number>;
 };
 
 export type Admin = { username: string; password: string };

@@ -7,6 +7,7 @@ import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { addCart, toggleFav } from "@/components/ProductCard";
 import { useProductImage, useStore } from "@/lib/store";
+import { RatingLine } from "@/lib/ratings";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -80,6 +81,7 @@ function ProductPage() {
               )}
               <h1 className="mt-2 font-serif text-4xl">{product.baseName ?? product.name}</h1>
               {product.parentId && <fieldset className="mt-6"><legend className="mb-2 text-sm font-medium">Size</legend><div className="flex flex-wrap gap-2">{variants.map(v => <Button key={v.id} variant={v.id === product.id ? "default" : "outline"} aria-pressed={v.id === product.id} onClick={() => setSelection({ routeId: id, sku: v.id })}>{v.variantLabel}</Button>)}</div></fieldset>}
+              <RatingLine ids={[product.id]} className="mt-2 text-sm" />
               <p className="mt-3 text-2xl font-medium">₹{product.price.toLocaleString("en-IN")}</p>
               {product.description && <p className="mt-4 text-muted-foreground">{product.description}</p>}
               <div className="mt-8 flex flex-wrap gap-3">

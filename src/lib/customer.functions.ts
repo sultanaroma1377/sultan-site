@@ -100,7 +100,28 @@ export const updateCustomerOrder = createServerFn({ method: 'POST' }).inputValid
   if (data.action === 'accept') { if (cur.status !== 'pending' && cur.status !== 'rejected') throw new Error('Order cannot be accepted'); order = { ...cur, status: 'accepted', acceptedAt: now }; }
   else if (data.action === 'reject') { if (cur.status !== 'pending' && cur.status !== 'accepted') throw new Error('Order cannot be rejected'); order = { ...cur, status: 'rejected', rejectedAt: now }; }
   else if (data.action === 'dispatch') { if (cur.status !== 'accepted') throw new Error('Only accepted orders can be dispatched'); order = { ...cur, status: 'dispatched', dispatchedAt: now }; }
-  else { if (cur.status !== 'dispatched') throw new Error('Courier details need a dispatched order'); if (!data.courierName || !data.courierNo) throw new Error('Enter courier name and number'); order = { ...cur, courierName: data.courierName, courierNo: data.courierNo }; }
+  else { if (cur.status !== 'dispatched') throw new Error('Courier details need a dispatched order'); if (!data.courierNo) throw new Error('Enter tracking number'); order = { ...cur, courierName: data.courierName || undefined, courierNo: data.courierNo }; }
   const result = await sb.from('customer_orders').update({ data: order as never }).eq('id', data.id);
   if (result.error) throw new Error('Order not updated'); return order;
+});
+
+export const rateOrderItem = createServerFn({ method: 'POST' }).inputValidator(d => z.object({ orderId: z.string().uuid(), productId: z.string().min(1), stars: z.number().int().min(1).max(5) }).parse(d)).handler(async ({ data }) => {
+  const h = await import('./customer.server'); await h.assertWriteOrigin(); const session = await h.requireSession(); const sb = await h.database();
+  const row = await sb.from('customer_orders').select('data').eq('id', data.orderId).eq('customer_id', session.customer_id ?? '').single();
+  if (!row.data) throw new Error('Order not found');
+  const cur = row.data.data as unknown as ConfirmedOrder;
+  if (cur.status !== 'dispatched') throw new Error('You can rate after dispatch');
+  if (!cur.items.some(i => i.productId === data.productId)) throw new Error('Item not in order');
+  const order = { ...cur, ratings: { ...(cur.ratings ?? {}), [data.productId]: data.stars } };
+  const r = await sb.from('customer_orders').update({ data: order as never }).eq('id', data.orderId);
+  if (r.error) throw new Error('Rating not saved'); return order;
+});
+
+export const productRatings = createServerFn({ method: 'GET' }).handler(async () => {
+  const h = await import('./customer.server'); const sb = await h.database();
+  const { data, error } = await sb.from('customer_orders').select('data');
+  if (error) throw new Error('Could not load ratings');
+  const out: Record<string, { sum: number; count: number }> = {};
+  for (const row of data) for (const [pid, n] of Object.entries((row.data as unknown as ConfirmedOrder).ratings ?? {})) { const e = out[pid] ??= { sum: 0, count: 0 }; e.sum += n; e.count++; }
+  return out;
 });
