@@ -1,6 +1,7 @@
 # Tasks
-- [ ] Replace camera dispatch with external scanner input and verify it.
-- [ ] Add submitted star-and-text reviews shared across perfume variants and verify them.
+- [x] Replace camera dispatch with external scanner input; scanner parsing regression tests pass.
+- [x] Add submitted star-and-text reviews shared across perfume variants; rule tests and desktop/mobile product display pass.
+- [ ] Verify real dispatch and review submission end-to-end — blocked because the available Admin login is rejected.
 - [x] Add secure online customer accounts and customer activity in Admin.
 - [x] Add account details/password change and customer orders pages.
 - [x] Add previous receiver choices at checkout and verify the full customer/admin flow.
