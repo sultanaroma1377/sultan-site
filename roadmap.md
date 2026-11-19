@@ -1,4 +1,5 @@
 # Tasks
+- [ ] Put recipient above sender on printed labels, add saved optional receiver WhatsApp numbers, and fix review-window contrast.
 - [x] Replace camera dispatch with external scanner input; scanner parsing regression tests pass.
 - [x] Add submitted star-and-text reviews shared across perfume variants; rule tests and desktop/mobile product display pass.
 - [ ] Verify real dispatch and review submission end-to-end — blocked because the available Admin login is rejected.

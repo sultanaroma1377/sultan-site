@@ -18,3 +18,4 @@
 - Persist shopping through customer server functions, validate checkout totals against the online catalog, and poll authorized activity for cross-device admin visibility; exclude private customer data from browser persistence.
 - Store reviews by perfume parent identity in order JSON and aggregate once per order; this shares stars and text across sizes while retaining purchased SKU ownership checks.
 - Parse external scanner keyboard input with a browser-safe helper and debounce complete QR payloads; dispatch scanning must not request camera access.
+- Keep address-label drawing in a shared browser-safe PDF helper so single and combined print/download layouts stay consistent.

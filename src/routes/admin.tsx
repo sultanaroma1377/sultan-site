@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
+import { drawAddress } from "@/lib/address-label";
 import type { Product, ConfirmedOrder } from "@/lib/types";
 import { mapSheetProducts, mergeSheetProducts, type EcoVariant } from "@/lib/sheet-mapping";
 import { productGroups } from "@/lib/product-groups";
@@ -594,6 +595,7 @@ function OrdersTab() {
     `Customer: ${customers.find((c) => c.id === o.customerId)?.username ?? "-"}`,
     `Receiver: ${o.receiverName}`,
     `Number: ${o.receiverPhone}`,
+    ...(o.receiverWhatsapp ? [`WhatsApp: ${o.receiverWhatsapp}`] : []),
     `Items: ${o.items.map((i) => `${i.name} x${i.qty}`).join(", ")}`,
     `Confirmed: ${new Date(o.acceptedAt ?? o.createdAt).toLocaleString("en-IN")}`,
   ].join("\n"), { margin: 1, width: 300 });
@@ -656,6 +658,7 @@ function OrdersTab() {
                       <div className="font-medium">Order #{o.orderNo ?? o.id} · {cust?.username ?? "—"}</div>
                       <div className="text-sm text-muted-foreground">{new Date(o.createdAt).toLocaleString()} · ₹{o.total.toLocaleString("en-IN")} · <span className="font-medium capitalize">{o.status}</span></div>
                       <div className="mt-2 text-sm">To: {o.receiverName} ({o.receiverPhone})</div>
+                      {o.receiverWhatsapp && <div className="text-sm">WhatsApp: {o.receiverWhatsapp}</div>}
                       <div className="text-sm">{o.address.line1}, {o.address.city}, {o.address.state} - {o.address.pincode}</div>
                       <ul className="mt-2 text-sm text-muted-foreground">
                         {o.items.map((i) => <li key={i.productId}>• {i.name} × {i.qty}</li>)}
@@ -685,34 +688,6 @@ function OrdersTab() {
       </Card>
     </div>
   );
-}
-
-function drawAddress(pdf: jsPDF, o: ConfirmedOrder, site: { name: string; address: string; phone?: string }, x: number, y: number, qr?: string) {
-  if (qr) pdf.addImage(qr, "PNG", x + 92, y + 38, 34, 34);
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(11);
-  pdf.text("FROM:", x, y);
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(10);
-  pdf.text(site.name, x, y + 5);
-  const fromLines = pdf.splitTextToSize(site.address, 120);
-  pdf.text(fromLines, x, y + 10);
-  if (site.phone) pdf.text(site.phone, x, y + 10 + fromLines.length * 5);
-
-  const ty = y + 40;
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(11);
-  pdf.text("TO:", x, ty);
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(12);
-  pdf.text(o.receiverName, x, ty + 6);
-  pdf.setFontSize(10);
-  pdf.text(o.receiverPhone, x, ty + 12);
-  const toLines = pdf.splitTextToSize(`${o.address.line1}, ${o.address.city}, ${o.address.state} - ${o.address.pincode}`, qr ? 88 : 120);
-  pdf.text(toLines, x, ty + 18);
-
-  pdf.setFontSize(8);
-  pdf.text(`Order #${o.orderNo ?? o.id}`, x, ty + 18 + toLines.length * 5 + 6);
 }
 
 function QrDispatch({ onCode }: { onCode: (text: string) => Promise<void> }) {

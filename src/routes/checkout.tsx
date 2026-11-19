@@ -4,7 +4,7 @@ import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { store, useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { previousReceivers } from "@/lib/customer-rules";
+import { optionalWhatsapp, previousReceivers } from "@/lib/customer-rules";
 import { checkoutCustomer } from "@/lib/customer.functions";
 import { flushCustomerChanges, refreshCustomer } from "@/lib/customer-sync";
 import { toast } from "sonner";
@@ -34,7 +34,7 @@ function CheckoutPage() {
   const [selectedAddrId, setSelectedAddrId] = useState<string | null>(current?.addresses[0]?.id ?? null);
   const [newAddr, setNewAddr] = useState<Omit<Address, "id">>({ line1: "", pincode: "", state: "", city: "" });
   const [showNewAddr, setShowNewAddr] = useState((current?.addresses.length ?? 0) === 0);
-  const [receiver, setReceiver] = useState({ name: "", phone: "" });
+  const [receiver, setReceiver] = useState({ name: "", phone: "", whatsapp: "" });
   const [couponCode, setCouponCode] = useState("");
 
   const items = useMemo(
@@ -72,7 +72,7 @@ function CheckoutPage() {
     setBusy(true);
     try {
       await flushCustomerChanges();
-      await checkoutCustomer({ data: { address, receiverName: receiver.name, receiverPhone: receiver.phone, couponCode: couponCode.trim() } });
+      await checkoutCustomer({ data: { address, receiverName: receiver.name, receiverPhone: receiver.phone, receiverWhatsapp: receiver.whatsapp, couponCode: couponCode.trim() } });
       await refreshCustomer();
       setStep("done");
     } catch (error) { toast.error(error instanceof Error ? error.message : "Order could not be placed"); }
@@ -119,9 +119,11 @@ function CheckoutPage() {
         {step === "receiver" && (
           <div className="mt-8 space-y-4">
             <h2 className="font-serif text-2xl">Receiver details</h2>
-            {savedReceivers.length > 0 && <label className="block text-sm">Previous receivers<select aria-label="Previous receivers" defaultValue="" className="mt-2 w-full rounded-md border bg-popover px-3 py-2" onChange={e => { const selected = savedReceivers[Number(e.target.value)]; setReceiver(e.target.value === "" || !selected ? { name: "", phone: "" } : selected); }}><option value="">New receiver</option>{savedReceivers.map((r, i) => <option key={`${r.name}-${r.phone}`} value={i}>{r.name} — {r.phone}</option>)}</select></label>}
+            {savedReceivers.length > 0 && <label className="block text-sm">Previous receivers<select aria-label="Previous receivers" defaultValue="" className="mt-2 w-full rounded-md border bg-popover px-3 py-2" onChange={e => { const selected = savedReceivers[Number(e.target.value)]; setReceiver(e.target.value === "" || !selected ? { name: "", phone: "", whatsapp: "" } : { ...selected, whatsapp: selected.whatsapp ?? "" }); }}><option value="">New receiver</option>{savedReceivers.map((r, i) => <option key={`${r.name}-${r.phone}-${r.whatsapp ?? ''}`} value={i}>{r.name} — {r.phone}{r.whatsapp ? ` · WhatsApp ${r.whatsapp}` : ''}</option>)}</select></label>}
             <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Receiver name" value={receiver.name} onChange={(e) => setReceiver({ ...receiver, name: e.target.value })} />
             <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Phone number" value={receiver.phone} onChange={(e) => setReceiver({ ...receiver, phone: e.target.value })} />
+            <label className="block text-sm">WhatsApp number (optional)<input type="tel" autoComplete="tel" className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="WhatsApp number" value={receiver.whatsapp} onChange={(e) => setReceiver({ ...receiver, whatsapp: e.target.value })} /></label>
+            {!optionalWhatsapp.safeParse(receiver.whatsapp).success && <p className="text-sm text-destructive">Enter a valid WhatsApp number.</p>}
             <div className="space-y-1">
               <input className="w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Coupon code (optional)" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} />
               {couponCode && (appliedCoupon ? <p className="text-xs text-accent">Coupon applied: −₹{appliedCoupon.discount}</p> : <p className="text-xs text-muted-foreground">Invalid or min amount not reached.</p>)}
@@ -135,7 +137,7 @@ function CheckoutPage() {
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setStep("address")}>Back</Button>
-              <Button onClick={confirm} disabled={busy || !receiver.name || !receiver.phone}>{busy ? "Placing order…" : "Confirm order"}</Button>
+              <Button onClick={confirm} disabled={busy || !receiver.name || !receiver.phone || !optionalWhatsapp.safeParse(receiver.whatsapp).success}>{busy ? "Placing order…" : "Confirm order"}</Button>
             </div>
           </div>
         )}

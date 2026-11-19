@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import type { Customer, ConfirmedOrder } from './types';
 import { saveReview, summarizeReviews } from './review-rules';
+import { optionalWhatsapp } from './customer-rules';
 
 const credentials = z.object({ username: z.string().trim().min(1).max(64).regex(/^[a-zA-Z0-9_.-]+$/), password: z.string().min(6).max(128), signup: z.boolean() });
 const address = z.object({ id: z.string(), line1: z.string().min(1).max(300), pincode: z.string().regex(/^\d{6}$/), state: z.string().min(1).max(100), city: z.string().min(1).max(100) });
@@ -61,7 +62,7 @@ export const changeCustomerPassword = createServerFn({ method: 'POST' }).inputVa
   return { ok: true };
 });
 
-export const checkoutCustomer = createServerFn({ method: 'POST' }).inputValidator(d => z.object({ address, receiverName: z.string().trim().min(1).max(100), receiverPhone: z.string().trim().regex(/^[+\d\s()-]{7,20}$/), couponCode: z.string().max(100) }).parse(d)).handler(async ({ data }) => {
+export const checkoutCustomer = createServerFn({ method: 'POST' }).inputValidator(d => z.object({ address, receiverName: z.string().trim().min(1).max(100), receiverPhone: z.string().trim().regex(/^[+\d\s()-]{7,20}$/), receiverWhatsapp: optionalWhatsapp, couponCode: z.string().max(100) }).parse(d)).handler(async ({ data }) => {
   const h = await import('./customer.server'); await h.assertWriteOrigin(); const session = await h.requireSession(); const sb = await h.database();
   const customer = await sb.from('customer_accounts').select('data').eq('id', session.customer_id ?? '').single();
   const catalog = await sb.from('shop_data').select('data').eq('key', 'catalog').single();
@@ -75,7 +76,7 @@ export const checkoutCustomer = createServerFn({ method: 'POST' }).inputValidato
   let orderNo = '';
   for (let i = 0; i < 10 && !orderNo; i++) { const n = 'WS' + String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, '0'); const dup = await sb.from('customer_orders').select('id').eq('data->>orderNo', n).limit(1); if (!dup.data?.length) orderNo = n; }
   if (!orderNo) throw new Error('Could not create order number');
-  const order: ConfirmedOrder = { orderNo, id: crypto.randomUUID(), customerId: session.customer_id ?? '', items, total: Math.max(0, subtotal - Number(coupon?.discount ?? 0)), address: data.address, receiverName: data.receiverName, receiverPhone: data.receiverPhone, status: 'pending', createdAt: Date.now() };
+  const order: ConfirmedOrder = { orderNo, id: crypto.randomUUID(), customerId: session.customer_id ?? '', items, total: Math.max(0, subtotal - Number(coupon?.discount ?? 0)), address: data.address, receiverName: data.receiverName, receiverPhone: data.receiverPhone, ...(data.receiverWhatsapp ? { receiverWhatsapp: data.receiverWhatsapp } : {}), status: 'pending', createdAt: Date.now() };
   const { error } = await sb.from('customer_orders').insert({ id: order.id, customer_id: order.customerId, data: order as never });
   if (error) throw new Error('Order not placed');
   const updated = { ...cart, cart: cart.cart.filter(i => i.savedForLater), addresses: cart.addresses.some(a => a.id === data.address.id) ? cart.addresses : [...cart.addresses, data.address] };

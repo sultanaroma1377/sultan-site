@@ -43,6 +43,7 @@ export type ConfirmedOrder = {
   address: Address;
   receiverName: string;
   receiverPhone: string;
+  receiverWhatsapp?: string;
   status: "pending" | "accepted" | "rejected" | "dispatched";
   createdAt: number;
   orderNo?: string;
