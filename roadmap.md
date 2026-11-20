@@ -1,5 +1,6 @@
 # Tasks
-- [ ] Put recipient above sender on printed labels, add saved optional receiver WhatsApp numbers, and fix review-window contrast.
+- [x] Put recipient above sender on printed labels, add saved optional receiver WhatsApp numbers, and fix review-window contrast; sample PDF, desktop/mobile dialog and receiver tests pass.
+- [ ] Verify WhatsApp checkout persistence through a real order — requires an authenticated customer checkout; not exercised in this turn.
 - [x] Replace camera dispatch with external scanner input; scanner parsing regression tests pass.
 - [x] Add submitted star-and-text reviews shared across perfume variants; rule tests and desktop/mobile product display pass.
 - [ ] Verify real dispatch and review submission end-to-end — blocked because the available Admin login is rejected.
