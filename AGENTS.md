@@ -19,3 +19,6 @@
 - Store reviews by perfume parent identity in order JSON and aggregate once per order; this shares stars and text across sizes while retaining purchased SKU ownership checks.
 - Parse external scanner keyboard input with a browser-safe helper and debounce complete QR payloads; dispatch scanning must not request camera access.
 - Keep address-label drawing in a shared browser-safe PDF helper so single and combined print/download layouts stay consistent.
+- Keep profit calculations in a tested browser-safe helper, snapshot purchase costs at checkout, and store adjustments in a session-protected private shop-data row so historical profit is stable and financial settings never enter the public catalog.
+- Resolve public review usernames server-side from the owning customer account, never from customer-submitted identity, so review attribution is trustworthy.
+- Keep expandable customer order summaries and their progress display in a dedicated component so order details remain hidden until opened.

@@ -38,7 +38,7 @@ export type Coupon = {
 export type ConfirmedOrder = {
   id: string;
   customerId: string;
-  items: { productId: string; name: string; price: number; qty: number }[];
+  items: { productId: string; name: string; price: number; qty: number; buyingPrice?: number }[];
   total: number;
   address: Address;
   receiverName: string;
@@ -53,7 +53,7 @@ export type ConfirmedOrder = {
   courierName?: string;
   courierNo?: string;
   ratings?: Record<string, number>;
-  reviews?: Record<string, { stars: number; text: string; createdAt: number }>;
+  reviews?: Record<string, { stars: number; text: string; createdAt: number; username?: string }>;
 };
 
 export type Admin = { username: string; password: string };

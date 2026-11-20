@@ -1,4 +1,7 @@
 # Tasks
+- [ ] Simplify customer order summaries and reveal details with a vertical confirmed/accepted/dispatched stepper.
+- [ ] Show verified customer usernames on new and existing reviews.
+- [ ] Add Admin profit analysis based on the uploaded dashboard, saved adjustments and historical item costs; verify calculations and available flows.
 - [x] Put recipient above sender on printed labels, add saved optional receiver WhatsApp numbers, and fix review-window contrast; sample PDF, desktop/mobile dialog and receiver tests pass.
 - [ ] Verify WhatsApp checkout persistence through a real order — requires an authenticated customer checkout; not exercised in this turn.
 - [x] Replace camera dispatch with external scanner input; scanner parsing regression tests pass.

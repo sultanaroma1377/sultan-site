@@ -9,29 +9,30 @@ export function scannedOrderNumber(text: string) {
   return /^(ws\d{6}|[0-9a-f]{8}-[0-9a-f-]{27})$/i.test(value) ? value.toUpperCase() : null;
 }
 
-export function saveReview(order: ConfirmedOrder, products: Product[], productId: string, stars: number, text: string) {
+export function saveReview(order: ConfirmedOrder, products: Product[], productId: string, stars: number, text: string, username?: string) {
   if (order.status !== 'dispatched') throw new Error('You can review after dispatch');
   if (!order.items.some(i => i.productId === productId)) throw new Error('Item not in order');
   if (!Number.isInteger(stars) || stars < 1 || stars > 5) throw new Error('Choose 1–5 stars');
   if (!text.trim() || text.trim().length > 2000) throw new Error('Enter a review of up to 2000 characters');
   const key = reviewKey(products, productId);
-  return { ...order, reviews: { ...order.reviews, [key]: { stars, text: text.trim(), createdAt: Date.now() } }, ratings: { ...order.ratings, [productId]: stars } };
+  return { ...order, reviews: { ...order.reviews, [key]: { stars, text: text.trim(), createdAt: Date.now(), ...(username ? { username } : {}) } }, ratings: { ...order.ratings, [productId]: stars } };
 }
 
-export function summarizeReviews(orders: ConfirmedOrder[], products: Product[]) {
-  const out: Record<string, { sum: number; count: number; reviews: { stars: number; text: string; createdAt: number }[] }> = {};
+export function summarizeReviews(orders: ConfirmedOrder[], products: Product[], usernames: Record<string, string> = {}) {
+  const out: Record<string, { sum: number; count: number; reviews: { stars: number; text: string; createdAt: number; username?: string }[] }> = {};
   for (const order of orders) {
     const seen = new Set<string>();
     for (const [id, review] of Object.entries(order.reviews ?? {})) {
       const key = reviewKey(products, id);
       const entry = out[key] ??= { sum: 0, count: 0, reviews: [] };
-      entry.sum += review.stars; entry.count++; entry.reviews.push(review); seen.add(key);
+      if (seen.has(key)) continue;
+      entry.sum += review.stars; entry.count++; entry.reviews.push({ ...review, username: usernames[order.customerId] ?? review.username }); seen.add(key);
     }
     for (const [id, stars] of Object.entries(order.ratings ?? {})) {
       const key = reviewKey(products, id);
       if (seen.has(key)) continue;
       const entry = out[key] ??= { sum: 0, count: 0, reviews: [] };
-      entry.sum += stars; entry.count++;
+      entry.sum += stars; entry.count++; seen.add(key);
     }
   }
   return out;

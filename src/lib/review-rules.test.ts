@@ -22,3 +22,9 @@ test('only purchased items in dispatched orders can be reviewed', () => {
   expect(() => saveReview(order, products, '17v3ml', 0, 'Good')).toThrow('1–5');
   expect(() => saveReview(order, products, '17v3ml', 4, ' ')).toThrow('Enter a review');
 });
+test('review author is retained and legacy authors resolve from customer usernames', () => {
+  const saved = saveReview(order, products, '17v3ml', 5, 'Excellent', 'sultan');
+  expect(saved.reviews?.['eco-17']?.username).toBe('sultan');
+  const legacy = saveReview(order, products, '17v3ml', 4, 'Good');
+  expect(summarizeReviews([legacy], products, { c: 'buyer' })['eco-17']?.reviews[0]?.username).toBe('buyer');
+});

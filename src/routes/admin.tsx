@@ -14,6 +14,7 @@ import { refreshAdminActivity } from "@/lib/customer-sync";
 import { updateCustomerOrder } from "@/lib/customer.functions";
 import { adminSignIn } from "@/lib/cloud-sync";
 import { scannedOrderNumber } from "@/lib/review-rules";
+import { ProfitDashboard } from "@/components/ProfitDashboard";
 
 function shrinkImage(file: File, max = 900): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -87,6 +88,7 @@ function AdminPage() {
             <TabsTrigger value="cart">Cart</TabsTrigger>
             <TabsTrigger value="coupons">Coupons</TabsTrigger>
             <TabsTrigger value="orders">Confirmed orders</TabsTrigger>
+            <TabsTrigger value="profit">Profit analysis</TabsTrigger>
           </TabsList>
           <TabsContent value="site"><SiteTab /></TabsContent>
           <TabsContent value="products"><ProductsTab /></TabsContent>
@@ -95,6 +97,7 @@ function AdminPage() {
           <TabsContent value="cart"><CartTab /></TabsContent>
           <TabsContent value="coupons"><CouponsTab /></TabsContent>
           <TabsContent value="orders"><OrdersTab /></TabsContent>
+          <TabsContent value="profit"><ProfitDashboard /></TabsContent>
         </Tabs>
       </main>
     </div>
