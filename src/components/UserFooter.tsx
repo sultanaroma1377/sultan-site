@@ -4,7 +4,7 @@ import { useStore } from "@/lib/store";
 export function UserFooter() {
   const site = useStore((s) => s.site);
   return (
-    <footer className="mt-24 border-t border-white/10 bg-white/10 backdrop-blur-md">
+    <footer className="mt-24 border-t border-border bg-background/40">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3 md:px-6">
         <div>
           <h3 className="font-brand text-2xl">{site.name}</h3>

@@ -50,7 +50,7 @@ function AdminPage() {
   }, [authed]);
   if (!authed) {
     return (
-      <div className="grid min-h-screen place-items-center bg-secondary/40 p-4">
+      <div className="grid min-h-screen place-items-center p-4">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -71,7 +71,7 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary/20">
+    <div className="min-h-screen">
       <header className="border-b bg-background px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <h1 className="font-serif text-2xl">Admin Panel</h1>

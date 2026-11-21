@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 
 export function HeroCarousel() {
@@ -29,17 +30,18 @@ export function HeroCarousel() {
 
   if (items.length === 0) return null;
   const idx = i % items.length;
-  const active = items[idx]!;
+  const active = items[idx];
+  if (!active) return null;
 
   const Slide = (
-    <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-border bg-theme-gradient-reverse">
+    <div className="relative aspect-[16/7] w-full overflow-hidden rounded-lg border border-border bg-primary-gradient">
       {active.image ? (
         <img src={active.image} alt={active.caption ?? "Featured"} className="h-full w-full object-cover" />
       ) : (
         <div className="grid h-full w-full place-items-center font-serif text-4xl text-on-gradient">{active.caption}</div>
       )}
       {active.caption && (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent p-5">
+        <div className="absolute inset-x-0 bottom-0 bg-carousel-scrim p-5">
           <p className="font-serif text-2xl text-on-gradient">{active.caption}</p>
           {active.productId && <p className="text-sm text-on-gradient-muted">Tap to view details</p>}
         </div>
@@ -59,27 +61,28 @@ export function HeroCarousel() {
         )}
         {items.length > 1 && (
           <>
-            <button
-              aria-label="Previous"
+            <Button
+              variant="outline" size="icon" aria-label="Previous"
               onClick={() => setI((v) => (v - 1 + items.length) % items.length)}
               className="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-card backdrop-blur-md"
             >
               <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              aria-label="Next"
+            </Button>
+            <Button
+              variant="outline" size="icon" aria-label="Next"
               onClick={() => setI((v) => (v + 1) % items.length)}
               className="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-border bg-card backdrop-blur-md"
             >
               <ChevronRight className="h-5 w-5" />
-            </button>
+            </Button>
             <div className="mt-3 flex justify-center gap-2">
               {items.map((s, n) => (
-                <button
+                <Button
+                  variant="ghost"
                   key={s.id}
                   aria-label={`Go to slide ${n + 1}`}
                   onClick={() => setI(n)}
-                  className={`h-2 rounded-full transition-all ${n === idx ? "w-6 bg-primary" : "w-2 bg-border"}`}
+                  className={`h-2 min-h-0 p-0 rounded-full transition-all ${n === idx ? "w-6 bg-primary" : "w-2 bg-border"}`}
                 />
               ))}
             </div>

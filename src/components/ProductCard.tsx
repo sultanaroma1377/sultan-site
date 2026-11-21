@@ -49,14 +49,14 @@ export function ProductCard({ product, variants = [product] }: { product: Produc
   );
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-lg border border-border bg-theme-gradient-reverse shadow-sm transition hover:shadow-lg">
+    <article className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm transition hover:shadow-lg">
       {/* 4 (height) : 3 (width) */}
       <div className="relative aspect-[3/4] overflow-hidden">
         <Link to="/product/$id" params={{ id: product.id }} className="block h-full w-full">
           {img ? (
             <img src={img} alt={product.name} className="h-full w-full object-cover transition group-hover:scale-105" />
           ) : (
-            <div className="grid h-full w-full place-items-center font-serif text-5xl text-on-gradient-muted">
+            <div className="grid h-full w-full place-items-center font-serif text-5xl text-muted-foreground">
               {product.name[0]}
             </div>
           )}
@@ -66,22 +66,22 @@ export function ProductCard({ product, variants = [product] }: { product: Produc
           className="absolute right-2 top-2 rounded-full bg-background/30 backdrop-blur-md hover:bg-background/45"
           aria-label="Favorite"
         >
-          <Heart className={`h-4 w-4 text-on-gradient ${fav ? "fill-current" : ""}`} />
+          <Heart className={`h-4 w-4 text-foreground ${fav ? "fill-current" : ""}`} />
         </Button>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <Link
           to="/product/$id"
           params={{ id: product.id }}
-          className="font-serif text-lg leading-tight text-on-gradient hover:underline"
+          className="font-serif text-lg leading-tight text-foreground hover:underline"
         >
           {product.baseName ?? product.name}
         </Link>
-        {product.parentId && <p className="text-xs text-on-gradient-muted">{variants.map(v => v.variantLabel).join(" · ")}</p>}
-        <RatingLine ids={variants.map(v => v.id)} className="text-on-gradient" />
-        {product.description && <p className="line-clamp-2 text-xs text-on-gradient-muted">{product.description}</p>}
+        {product.parentId && <p className="text-xs text-muted-foreground">{variants.map(v => v.variantLabel).join(" · ")}</p>}
+        <RatingLine ids={variants.map(v => v.id)} className="text-foreground" />
+        {product.description && <p className="line-clamp-2 text-xs text-muted-foreground">{product.description}</p>}
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="font-medium text-on-gradient">{product.parentId ? "From " : ""}₹{Math.min(...variants.map(v => v.price)).toLocaleString("en-IN")}</span>
+          <span className="font-medium text-foreground">{product.parentId ? "From " : ""}₹{Math.min(...variants.map(v => v.price)).toLocaleString("en-IN")}</span>
           {product.parentId ? <Button asChild size="sm"><Link to="/product/$id" params={{ id: product.id }}>Sizes</Link></Button> : <Button size="icon" onClick={() => addCart(product.id)} className="rounded-full" aria-label="Add to cart"><ShoppingBag className="h-4 w-4" /></Button>}
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { store, useStore } from "@/lib/store";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -14,9 +14,9 @@ export function UserHeader() {
   });
 
   return (
-    <header className="sticky top-0 z-40 border-b border-on-gradient/10 bg-on-gradient/10 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/" className="flex min-w-0 items-center gap-3">
           {site.logo ? (
             <img src={site.logo} alt={site.name} className="h-10 w-auto max-w-[160px] object-contain" />
           ) : (
@@ -24,7 +24,7 @@ export function UserHeader() {
               {site.name?.[0] ?? "M"}
             </span>
           )}
-          <span className="font-brand text-2xl tracking-wide">{site.name}</span>
+          <span className="min-w-0 break-words font-brand text-xl sm:text-2xl">{site.name}</span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ function AccountSheet() {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full border-none bg-theme-gradient text-on-gradient sm:max-w-md [&_.text-muted-foreground]:text-on-gradient/75 [&_input]:bg-on-gradient/10 [&_input]:text-on-gradient [&_input]:placeholder:text-on-gradient/60 [&_input]:border-on-gradient/30">
+      <SheetContent className="w-full overflow-y-auto border-border bg-card text-foreground sm:max-w-md">
         <SheetHeader>
           <SheetTitle className="font-serif text-2xl">
             {current ? `Hello, ${current.username}` : "Welcome"}
@@ -116,14 +116,11 @@ function AccountSheet() {
             <input className="w-full rounded-md border bg-background px-3 py-2" placeholder="Username" value={u} onChange={(e) => setU(e.target.value)} required />
             <input className="w-full rounded-md border bg-background px-3 py-2" type="password" minLength={6} placeholder="Password" value={p} onChange={(e) => setP(e.target.value)} required />
             {err && <p className="text-sm text-destructive">{err}</p>}
-            <Button type="submit" className="w-full bg-on-gradient text-primary hover:bg-on-gradient/90">{mode === "login" ? "Login" : "Sign up"}</Button>
+            <Button type="submit" className="w-full">{mode === "login" ? "Login" : "Sign up"}</Button>
             <button type="button" onClick={() => setMode("menu")} className="block w-full text-sm text-muted-foreground hover:underline">Back</button>
           </form>
         )}
 
-        <button onClick={close} className="absolute right-4 top-4 rounded-full p-2 hover:bg-on-gradient/15" aria-label="Close">
-          <X className="h-4 w-4" />
-        </button>
       </SheetContent>
     </Sheet>
   );

@@ -22,3 +22,4 @@
 - Keep profit calculations in a tested browser-safe helper, snapshot purchase costs at checkout, and store adjustments in a session-protected private shop-data row so historical profit is stable and financial settings never enter the public catalog.
 - Resolve public review usernames server-side from the owning customer account, never from customer-submitted identity, so review attribution is trustworthy.
 - Keep expandable customer order summaries and their progress display in a dedicated component so order details remain hidden until opened.
+- Define global themes in Tailwind v4's CSS-first entry and reuse semantic gradient utilities in shared controls; a root-mounted theme switch persists only the viewer's display preference so Admin and customer pages stay consistent without changing shop data.

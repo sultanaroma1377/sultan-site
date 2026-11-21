@@ -12,11 +12,9 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import "@fontsource/cormorant-garamond/400.css";
 import "@fontsource/cormorant-garamond/600.css";
-import "@fontsource/karla/400.css";
-import "@fontsource/karla/500.css";
-import "@fontsource/karla/600.css";
+import "@fontsource-variable/plus-jakarta-sans";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { Bubbles } from "@/components/Bubbles";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
 import { startCustomerSync } from "@/lib/customer-sync";
 import { startCloudSync } from "@/lib/cloud-sync";
@@ -113,7 +111,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="dark">
+      <body>
         {children}
         <Scripts />
       </body>
@@ -127,7 +125,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Bubbles />
+      <ThemeToggle />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster />

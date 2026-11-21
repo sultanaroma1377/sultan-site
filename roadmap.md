@@ -1,4 +1,5 @@
 # Tasks
+- [ ] Apply the requested app-wide luxury light/dark theme and verify Cloud saves across browsers.
 - [ ] Simplify customer order summaries and reveal details with a vertical confirmed/accepted/dispatched stepper.
 - [ ] Show verified customer usernames on new and existing reviews.
 - [ ] Add Admin profit analysis based on the uploaded dashboard, saved adjustments and historical item costs; verify calculations and available flows.

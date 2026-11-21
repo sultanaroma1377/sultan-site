@@ -4,6 +4,7 @@ import { useState } from "react";
 import { UserHeader } from "@/components/UserHeader";
 import { UserFooter } from "@/components/UserFooter";
 import { HeroCarousel } from "@/components/HeroCarousel";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -49,7 +50,7 @@ function Storefront() {
       <section>
         <div className="mx-auto max-w-5xl px-6 py-16 text-center">
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-muted-foreground">New Season</p>
-          <h1 className="font-brand text-5xl leading-tight md:text-7xl">{site.name}</h1>
+          <h1 className="font-brand text-highlight text-5xl leading-tight md:text-7xl">{site.name}</h1>
           <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground md:text-lg">{site.tagline}</p>
         </div>
       </section>
@@ -57,12 +58,12 @@ function Storefront() {
       <HeroCarousel />
 
       <div className="mx-auto max-w-6xl px-4 py-10 text-center md:px-6">
-        <button
+        <Button
           onClick={() => navigate({ to: "/products", search: { q: "" } })}
-          className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground hover:opacity-90"
+          className="h-auto rounded-md px-8 py-3 text-sm font-medium"
         >
           Browse all perfumes
-        </button>
+        </Button>
       </div>
 
       <UserFooter />
