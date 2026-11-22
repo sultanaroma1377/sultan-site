@@ -1,5 +1,5 @@
 # Tasks
-- [ ] Apply the requested app-wide luxury light/dark theme and verify Cloud saves across browsers.
+- [x] Apply the requested app-wide luxury light/dark theme; desktop/mobile switching, reload persistence, menu controls, Cloud save/read across browsers and 24 regression tests pass.
 - [ ] Simplify customer order summaries and reveal details with a vertical confirmed/accepted/dispatched stepper.
 - [ ] Show verified customer usernames on new and existing reviews.
 - [ ] Add Admin profit analysis based on the uploaded dashboard, saved adjustments and historical item costs; verify calculations and available flows.
@@ -7,7 +7,7 @@
 - [ ] Verify WhatsApp checkout persistence through a real order — requires an authenticated customer checkout; not exercised in this turn.
 - [x] Replace camera dispatch with external scanner input; scanner parsing regression tests pass.
 - [x] Add submitted star-and-text reviews shared across perfume variants; rule tests and desktop/mobile product display pass.
-- [ ] Verify real dispatch and review submission end-to-end — blocked because the available Admin login is rejected.
+- [ ] Verify real dispatch and review submission end-to-end — Admin sign-in now works after Cloud connection repair; customer order verification remains pending.
 - [x] Add secure online customer accounts and customer activity in Admin.
 - [x] Add account details/password change and customer orders pages.
 - [x] Add previous receiver choices at checkout and verify the full customer/admin flow.
