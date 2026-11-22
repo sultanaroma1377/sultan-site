@@ -23,3 +23,4 @@
 - Resolve public review usernames server-side from the owning customer account, never from customer-submitted identity, so review attribution is trustworthy.
 - Keep expandable customer order summaries and their progress display in a dedicated component so order details remain hidden until opened.
 - Define global themes in Tailwind v4's CSS-first entry and reuse semantic gradient utilities in shared controls; a root-mounted theme switch persists only the viewer's display preference so Admin and customer pages stay consistent without changing shop data.
+- Normalize exact legacy sample content in a tested browser-safe helper on store hydration and writes so local and online catalog reads stay blank without removing merchant-edited content.

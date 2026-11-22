@@ -1,6 +1,18 @@
 /// <reference types="bun" />
 import { expect, test } from "bun:test";
 
+test("a new shop has no pre-added products or optional business details", async () => {
+  const { store } = await import("./store");
+  const initial = store.get();
+  expect(initial.products).toEqual([]);
+  expect(initial.site.tagline).toBe("");
+  expect(initial.site.address).toBe("");
+  expect(initial.site.phone).toBe("");
+  expect(initial.site.website).toBe("");
+  expect(initial.site.locationLink).toBe("");
+  expect(initial.site.social).toEqual({});
+});
+
 test("site edits and manually added Eco sizes are written to browser storage", async () => {
   const data = new Map<string, string>();
   const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");

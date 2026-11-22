@@ -11,10 +11,10 @@ export const Route = createFileRoute("/")({
   component: Storefront,
   head: () => ({
     meta: [
-      { title: "SULTAN AL MISK — Hand-blended luxury perfumes" },
-      { name: "description", content: "Discover hand-blended perfumes inspired by gardens in bloom. Floral, woody and oriental fragrances." },
-      { property: "og:title", content: "SULTAN AL MISK — Hand-blended luxury perfumes" },
-      { property: "og:description", content: "Discover hand-blended perfumes inspired by gardens in bloom." },
+      { title: "SULTAN AL MISK — Perfumes" },
+      { name: "description", content: "Explore perfumes from SULTAN AL MISK." },
+      { property: "og:title", content: "SULTAN AL MISK — Perfumes" },
+      { property: "og:description", content: "Explore perfumes from SULTAN AL MISK." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -49,9 +49,8 @@ function Storefront() {
 
       <section>
         <div className="mx-auto max-w-5xl px-6 py-16 text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-muted-foreground">New Season</p>
-          <h1 className="font-brand text-highlight text-5xl leading-tight md:text-7xl">{site.name}</h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground md:text-lg">{site.tagline}</p>
+          <h1 className="font-brand text-brand text-5xl leading-tight md:text-7xl">{site.name}</h1>
+          {site.tagline && <p className="mx-auto mt-4 max-w-xl text-base text-muted-foreground md:text-lg">{site.tagline}</p>}
         </div>
       </section>
 

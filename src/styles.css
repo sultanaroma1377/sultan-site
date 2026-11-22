@@ -42,6 +42,7 @@
   --color-on-gradient: var(--on-gradient);
   --color-on-gradient-muted: var(--on-gradient-muted);
   --color-overlay: var(--overlay);
+  --color-brand: var(--brand);
   --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
   --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
   --font-brand: "Yuzarsif", "Cormorant Garamond", ui-serif, Georgia, serif;
@@ -55,6 +56,7 @@
   --gradient-card: linear-gradient(145deg, #F2ECE1 0%, #FAF8F5 50%, #FFFFFF 100%);
   --gradient-text-highlight: linear-gradient(135deg, #E5DEC9 0%, #F7F3E8 50%, #FFFFFF 100%);
   --text-primary: #0B241E;
+  --brand: #0B241E;
   --text-muted: #52605C;
   --border-subtle: rgba(197, 160, 89, 0.3);
   --background: oklch(0.963 0.016 90);
@@ -82,6 +84,7 @@
   --gradient-bg: linear-gradient(180deg, #05120F 0%, #0B241E 50%, #12362D 100%);
   --gradient-card: linear-gradient(145deg, #0D2620 0%, #113129 50%, #1B493E 100%);
   --text-primary: #F7F3E8;
+  --brand: #C5A059;
   --text-muted: #9DB0AA;
   --border-subtle: rgba(197, 160, 89, 0.25);
   --background: oklch(0.24 0.033 168);

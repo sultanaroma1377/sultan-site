@@ -14,9 +14,9 @@ export const Route = createFileRoute("/product/$id")({
   head: () => ({
     meta: [
       { title: "Perfume details — SULTAN AL MISK" },
-      { name: "description", content: "Notes, price and availability for this hand-blended SULTAN AL MISK perfume." },
+      { name: "description", content: "Details, price and availability for this SULTAN AL MISK perfume." },
       { property: "og:title", content: "Perfume details — SULTAN AL MISK" },
-      { property: "og:description", content: "Notes, price and availability for this hand-blended SULTAN AL MISK perfume." },
+      { property: "og:description", content: "Details, price and availability for this SULTAN AL MISK perfume." },
       { property: "og:type", content: "product" },
       { name: "twitter:card", content: "summary" },
     ],

@@ -13,9 +13,9 @@ export const Route = createFileRoute("/products")({
   head: () => ({
     meta: [
       { title: "Shop all perfumes — SULTAN AL MISK" },
-      { name: "description", content: "Browse the full SULTAN AL MISK collection of hand-blended floral, woody, citrus and oriental perfumes." },
+      { name: "description", content: "Browse the SULTAN AL MISK perfume collection." },
       { property: "og:title", content: "Shop all perfumes — SULTAN AL MISK" },
-      { property: "og:description", content: "Browse the full SULTAN AL MISK collection of hand-blended perfumes." },
+      { property: "og:description", content: "Browse the SULTAN AL MISK perfume collection." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

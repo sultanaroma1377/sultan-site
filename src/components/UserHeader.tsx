@@ -21,10 +21,10 @@ export function UserHeader() {
             <img src={site.logo} alt={site.name} className="h-10 w-auto max-w-[160px] object-contain" />
           ) : (
             <span className="grid h-10 w-10 place-items-center rounded-full bg-secondary font-serif text-lg">
-              {site.name?.[0] ?? "M"}
+              {site.name?.[0] ?? ""}
             </span>
           )}
-          <span className="min-w-0 break-words font-brand text-xl sm:text-2xl">{site.name}</span>
+          <span className="min-w-0 break-words font-brand text-xl text-brand sm:text-2xl">{site.name}</span>
         </Link>
 
         <div className="flex items-center gap-2">

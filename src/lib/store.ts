@@ -3,6 +3,7 @@ import type { Admin, CarouselSlide, ConfirmedOrder, Coupon, Customer, Product, S
 import type { EcoVariant, SheetMode } from "./sheet-mapping";
 import { migrateEcoProducts } from "./product-groups";
 import { toast } from "sonner";
+import { cleanShopContent } from "./shop-content";
 
 type State = {
   site: SiteSettings;
@@ -18,27 +19,18 @@ type State = {
 
 const KEY = "perfume_app_v1";
 
-const defaultProducts: Product[] = [
-  { id: "p1", name: "Rose Velvet", price: 2499, description: "Bulgarian rose, soft musk, vanilla.", category: "Floral" },
-  { id: "p2", name: "Jasmine Noir", price: 2899, description: "Night-blooming jasmine and oud.", category: "Floral" },
-  { id: "p3", name: "Cedar Bloom", price: 2299, description: "Cedarwood, bergamot, white tea.", category: "Woody" },
-  { id: "p4", name: "Peony Mist", price: 1999, description: "Peony, peach, soft amber.", category: "Floral" },
-  { id: "p5", name: "Amber Reverie", price: 3199, description: "Warm amber, sandalwood, saffron.", category: "Oriental" },
-  { id: "p6", name: "Citrus Garden", price: 1799, description: "Yuzu, neroli, green leaves.", category: "Citrus" },
-];
-
 const defaultState: State = {
   site: {
     name: "SULTAN AL MISK",
-    tagline: "Hand-blended perfumes inspired by gardens in bloom.",
-    social: { instagram: "#", facebook: "#", twitter: "#" },
-    website: "#",
-    locationLink: "#",
-    address: "12 Rosewood Lane, Mumbai 400001",
-    phone: "+91 90000 00000",
+    tagline: "",
+    social: {},
+    website: "",
+    locationLink: "",
+    address: "",
+    phone: "",
   },
   admins: [{ username: "aaa", password: "aaa" }],
-  products: defaultProducts,
+  products: [],
   customers: [],
   currentCustomerId: null,
   coupons: [],
@@ -59,7 +51,7 @@ function load(): State {
     delete parsed.commonProductImage;
     parsed.products = migrateEcoProducts(parsed.products, (parsed.sheetSync.variants ?? []).map((v: EcoVariant) => v.label));
     if (parsed.site?.name === "Maison Fleur") parsed.site = { ...parsed.site, name: "SULTAN AL MISK" };
-    return parsed;
+    return { ...parsed, ...cleanShopContent(parsed.site, parsed.products) };
   } catch {
     return defaultState;
   }
@@ -71,7 +63,7 @@ export const store = {
     const updated = updater(state);
     const next = {
       ...updated,
-      products: migrateEcoProducts(updated.products, (updated.sheetSync.variants ?? []).map(v => v.label)),
+      ...cleanShopContent(updated.site, migrateEcoProducts(updated.products, (updated.sheetSync.variants ?? []).map(v => v.label))),
     };
     try {
       if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify({ ...next, customers: [], orders: [], currentCustomerId: null }));
