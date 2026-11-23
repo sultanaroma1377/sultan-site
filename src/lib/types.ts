@@ -23,6 +23,7 @@ export type Customer = {
   id: string;
   username: string;
   password: string;
+  authManaged?: boolean;
   favorites: string[];
   cart: { productId: string; qty: number; savedForLater?: boolean }[];
   addresses: Address[];

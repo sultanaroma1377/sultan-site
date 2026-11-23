@@ -13,13 +13,13 @@ import { productGroups } from "@/lib/product-groups";
 import { refreshAdminActivity } from "@/lib/customer-sync";
 import { updateCustomerOrder } from "@/lib/customer.functions";
 import { adminSignIn } from "@/lib/cloud-sync";
-import { scannedOrderNumber } from "@/lib/review-rules";
+import { createDispatchScanner } from "@/lib/dispatch-scanner";
 import { ProfitDashboard } from "@/components/ProfitDashboard";
 
 function shrinkImage(file: File, max = 900): Promise<string> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file); const img = new Image();
-    img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); resolve(c.toDataURL("image/jpeg", 0.82)); };
+    img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); const context = c.getContext("2d"); if (!context) { URL.revokeObjectURL(url); reject(new Error('Could not process image')); return; } context.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url); resolve(c.toDataURL("image/jpeg", 0.82)); };
     img.onerror = reject; img.src = url;
   });
 }
@@ -252,7 +252,7 @@ function ProductsTab() {
             <div className="mb-3 flex gap-4 text-sm">
               <label className="flex items-center gap-2">
                 <input type="radio" checked={!draft.image} onChange={() => setDraft({ ...draft, image: undefined })} />
-                Keep default image
+                Use size image
               </label>
               <label className="flex items-center gap-2">
                 <input type="radio" checked={!!draft.image} onChange={() => {}} />
@@ -266,15 +266,13 @@ function ProductsTab() {
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (!f) return;
-                const reader = new FileReader();
-                reader.onload = () => setDraft((d) => ({ ...d, image: reader.result as string }));
-                reader.readAsDataURL(f);
+                void shrinkImage(f).then(image => setDraft(d => ({ ...d, image }))).catch(() => toast.error('Could not upload image'));
               }}
             />
             {draft.image && (
               <div className="mt-3 flex items-center gap-3">
                 <img src={draft.image} alt="preview" className="h-24 w-18 rounded-md object-cover" style={{ aspectRatio: "3 / 4", height: "6rem" }} />
-                <Button size="sm" variant="ghost" onClick={() => setDraft({ ...draft, image: undefined })}>Remove / use default</Button>
+                <Button size="sm" variant="ghost" onClick={() => setDraft({ ...draft, image: undefined })}>Remove / use size image</Button>
               </div>
             )}
           </div>
@@ -327,6 +325,8 @@ function ProductsTab() {
                 <div className="text-sm text-muted-foreground">₹{p.price} · {p.category}</div>
               </div>
               <div className="flex gap-2">
+                <label className="cursor-pointer self-center text-sm text-primary hover:underline">Change product image<input type="file" accept="image/*" aria-label={`Image for ${p.baseName ?? p.name}`} className="hidden" onChange={e => { const file = e.target.files?.[0]; if (!file) return; void shrinkImage(file).then(image => { store.set(s => ({ ...s, products: s.products.map(item => group.some(v => v.id === item.id) ? { ...item, image } : item) })); toast.success('Product image saved'); }).catch(() => toast.error('Could not upload image')); e.target.value = ''; }} /></label>
+                {group.some(v => v.image) && <Button size="sm" variant="ghost" onClick={() => store.set(s => ({ ...s, products: s.products.map(item => group.some(v => v.id === item.id) ? { ...item, image: undefined } : item) }))}>Use size image</Button>}
                 {!p.parentId && <Button size="sm" variant="outline" onClick={() => startEdit(p)}>Edit</Button>}
                 <Button size="sm" variant="destructive" onClick={() => store.set((s) => ({ ...s, products: s.products.filter((x) => !group.some(v => v.id === x.id)) }))}>Delete</Button>
               </div>
@@ -639,7 +639,7 @@ function OrdersTab() {
         <Button variant="outline" onClick={() => dispatchMany([...selected])} disabled={selected.size === 0}>Add to dispatch ({selected.size})</Button>
         <Button variant="outline" onClick={() => setScanning(v => !v)}>{scanning ? "Close scanner" : "External scanner"}</Button>
       </div>
-      {scanning && <QrDispatch onCode={async (text) => { const no = scannedOrderNumber(text); const o = orders.find((x) => x.orderNo?.toUpperCase() === no || x.id.toUpperCase() === no); if (!o) { toast.error("Order not found in QR"); return; } await dispatchMany([o.id]); }} />}
+      {scanning && <QrDispatch onCode={async (no) => { const o = store.get().orders.find(x => x.orderNo?.toUpperCase() === no || x.id.toUpperCase() === no); if (!o) throw new Error('Order not found in QR'); if (o.status === 'dispatched') { toast.info(`${no} already dispatched`); return; } if (o.status !== 'accepted') throw new Error(`${no} must be accepted first`); await updateCustomerOrder({ data: { id: o.id, action: 'dispatch' } }); store.set(s => ({ ...s, orders: s.orders.map(item => item.id === o.id ? { ...item, status: 'dispatched', dispatchedAt: Date.now() } : item) })); await refreshAdminActivity(); toast.success(`${no} dispatched`); }} />}
       <div className="hidden">
       </div>
       <div className="flex flex-wrap gap-2">
@@ -695,17 +695,13 @@ function OrdersTab() {
 
 function QrDispatch({ onCode }: { onCode: (text: string) => Promise<void> }) {
   const input = useRef<HTMLTextAreaElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const busy = useRef(false);
+  const callback = useRef(onCode); callback.current = onCode;
+  const scanner = useRef<ReturnType<typeof createDispatchScanner> | null>(null);
   const [working, setWorking] = useState(false);
-  const submit = async () => {
-    clearTimeout(timer.current);
-    const text = input.current?.value.trim();
-    if (!text || busy.current) return;
-    busy.current = true; setWorking(true);
-    try { await onCode(text); }
-    finally { busy.current = false; setWorking(false); if (input.current) { input.current.value = ''; input.current.focus(); } }
-  };
-  useEffect(() => { input.current?.focus(); return () => clearTimeout(timer.current); }, []);
-  return <form onSubmit={e => { e.preventDefault(); void submit(); }} className="space-y-3 rounded-lg border bg-card p-4"><label htmlFor="dispatch-scan" className="block text-sm font-medium">Scan order QR / order number</label><textarea id="dispatch-scan" ref={input} rows={3} disabled={working} className="w-full rounded-md border bg-background px-3 py-2 text-sm" onChange={() => { clearTimeout(timer.current); timer.current = setTimeout(() => { void submit(); }, 350); }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(timer.current); timer.current = setTimeout(() => { void submit(); }, 350); } }} /><Button type="submit" disabled={working}>{working ? 'Dispatching…' : 'Add to dispatch'}</Button></form>;
+  useEffect(() => {
+    scanner.current = createDispatchScanner(async number => { setWorking(true); try { await callback.current(number); } finally { setWorking(false); } }, error => toast.error(error instanceof Error ? error.message : 'Could not dispatch order'));
+    input.current?.focus();
+    return () => { scanner.current?.dispose(); scanner.current = null; };
+  }, []);
+  return <div className="space-y-3 border-y py-4"><label htmlFor="dispatch-scan" className="block text-sm font-medium">External scanner</label><textarea id="dispatch-scan" ref={input} rows={2} autoComplete="off" className="w-full rounded-md border bg-background px-3 py-2 text-sm" onChange={e => { scanner.current?.feed(e.target.value); e.target.value = ''; }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); scanner.current?.feed('\n'); } }} /><p role="status" className="text-sm text-muted-foreground">{working ? 'Dispatching…' : 'Ready to scan'}</p></div>;
 }

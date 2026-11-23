@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       customer_accounts: {
         Row: {
+          auth_user_id: string | null
           created_at: string
           data: Json
           id: string
@@ -23,6 +24,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          auth_user_id?: string | null
           created_at?: string
           data?: Json
           id?: string
@@ -30,6 +32,7 @@ export type Database = {
           username: string
         }
         Update: {
+          auth_user_id?: string | null
           created_at?: string
           data?: Json
           id?: string

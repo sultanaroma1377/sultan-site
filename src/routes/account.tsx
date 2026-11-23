@@ -8,6 +8,7 @@ import { changeCustomerPassword } from '@/lib/customer.functions';
 import { flushCustomerChanges } from '@/lib/customer-sync';
 import type { Address } from '@/lib/types';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const Route = createFileRoute('/account')({ component: AccountPage, head: () => ({ meta: [
   { title: 'Your account — SULTAN AL MISK' }, { name: 'description', content: 'Manage your SULTAN AL MISK delivery addresses and password.' },
@@ -44,7 +45,7 @@ function AccountPage() {
           <div className="flex items-end gap-2"><Button disabled={busy}>Save address</Button><Button type="button" variant="ghost" onClick={() => setDraft(null)}>Cancel</Button></div>
         </form>}
       </section>
-      <section className="border-t py-8"><h2 className="font-serif text-2xl">Change password</h2><form className="mt-5 max-w-md space-y-4" onSubmit={async e => { e.preventDefault(); if (passwords.newPassword !== passwords.confirm) { toast.error('New passwords do not match'); return; } setBusy(true); try { await changeCustomerPassword({ data: { currentPassword: passwords.currentPassword, newPassword: passwords.newPassword } }); setPasswords({ currentPassword: '', newPassword: '', confirm: '' }); toast.success('Password changed'); } catch (error) { toast.error(error instanceof Error ? error.message : 'Password not changed'); } finally { setBusy(false); } }}>
+      <section className="border-t py-8"><h2 className="font-serif text-2xl">Change password</h2><form className="mt-5 max-w-md space-y-4" onSubmit={async e => { e.preventDefault(); if (passwords.newPassword !== passwords.confirm) { toast.error('New passwords do not match'); return; } setBusy(true); try { if (customer.authManaged) { const { error } = await supabase.auth.updateUser({ password: passwords.newPassword, current_password: passwords.currentPassword }); if (error) throw error; } else { await changeCustomerPassword({ data: { currentPassword: passwords.currentPassword, newPassword: passwords.newPassword } }); } setPasswords({ currentPassword: '', newPassword: '', confirm: '' }); toast.success('Password changed'); } catch (error) { toast.error(error instanceof Error ? error.message : 'Password not changed'); } finally { setBusy(false); } }}>
         <label className="block text-sm">Current password<input type="password" autoComplete="current-password" className={input} required value={passwords.currentPassword} onChange={e => setPasswords({ ...passwords, currentPassword: e.target.value })} /></label>
         <label className="block text-sm">New password<input type="password" autoComplete="new-password" minLength={6} className={input} required value={passwords.newPassword} onChange={e => setPasswords({ ...passwords, newPassword: e.target.value })} /></label>
         <label className="block text-sm">Confirm new password<input type="password" autoComplete="new-password" minLength={6} className={input} required value={passwords.confirm} onChange={e => setPasswords({ ...passwords, confirm: e.target.value })} /></label>

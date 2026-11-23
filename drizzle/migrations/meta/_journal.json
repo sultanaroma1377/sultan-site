@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795420196731,
+      "tag": "0000_link_customer_cloud_accounts",
+      "breakpoints": true
+    }
+  ]
 }

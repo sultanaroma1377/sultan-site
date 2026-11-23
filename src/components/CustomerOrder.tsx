@@ -15,8 +15,8 @@ export function CustomerOrder({ order }: { order: ConfirmedOrder }) {
     { label: 'Accepted', date: order.acceptedAt, done: order.status === 'accepted' || order.status === 'dispatched' || Boolean(order.acceptedAt) },
     { label: 'Dispatched', date: order.dispatchedAt, done: order.status === 'dispatched' },
   ];
-  return <article className="overflow-hidden rounded-lg border bg-card text-card-foreground">
-    <Button variant="ghost" className="h-auto w-full justify-between gap-4 whitespace-normal rounded-none px-5 py-5 text-left hover:bg-muted" aria-expanded={open} aria-controls={detailsId} onClick={() => setOpen(value => !value)}>
+  return <article className="order-card overflow-hidden rounded-lg border bg-card text-card-foreground">
+    <Button variant="ghost" className="h-auto w-full justify-between gap-4 whitespace-normal rounded-none px-5 py-5 text-left text-foreground hover:bg-transparent hover:text-foreground" aria-expanded={open} aria-controls={detailsId} onClick={() => setOpen(value => !value)}>
       <span className="min-w-0 space-y-2">
         <span className="block font-serif text-xl">Order #{order.orderNo ?? order.id.slice(0, 8)}</span>
         <span className="block text-xs font-normal text-muted-foreground">{datetime(order.createdAt)}</span>

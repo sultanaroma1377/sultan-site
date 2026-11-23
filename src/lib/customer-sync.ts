@@ -2,6 +2,8 @@ import { toast } from 'sonner';
 import { store } from './store';
 import { customerLogin, customerLogout, customerState, saveCustomer, adminCustomerActivity } from './customer.functions';
 import type { Customer } from './types';
+import { supabase } from '@/integrations/supabase/client';
+import { connectCloudCustomer } from './customer-auth.functions';
 
 let applying = false;
 let pending: Promise<unknown> = Promise.resolve();
@@ -21,9 +23,23 @@ export async function signInCustomer(username: string, password: string, signup:
 }
 export async function signOutCustomer() {
   await flushCustomerChanges(); await customerLogout();
+  await supabase.auth.signOut();
   applying = true;
   try { store.set(s => ({ ...s, customers: [], orders: [], currentCustomerId: null })); }
   finally { applying = false; }
+}
+let connecting: Promise<void> | null = null;
+export function syncCloudCustomer() {
+  if (connecting) return connecting;
+  connecting = (async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) return;
+    await flushCustomerChanges();
+    const customer = await connectCloudCustomer();
+    apply(customer, []);
+    await refreshCustomer();
+  })().finally(() => { connecting = null; });
+  return connecting;
 }
 export async function flushCustomerChanges() { await pending; }
 export async function refreshCustomer() {
@@ -45,7 +61,7 @@ export function startCustomerSync() {
     pending = pending.catch(() => undefined).then(() => saveCustomer({ data }));
     void pending.catch(() => toast.error('Customer changes not saved online. Please try again.'));
   });
-  void refreshCustomer().catch(() => undefined);
+  void syncCloudCustomer().then(refreshCustomer).catch(() => undefined);
   window.setInterval(() => { if (store.get().currentCustomerId) void pending.then(refreshCustomer).catch(() => undefined); }, 5000);
 }
 export async function refreshAdminActivity() {

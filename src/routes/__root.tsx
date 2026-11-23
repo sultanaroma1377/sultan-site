@@ -16,8 +16,10 @@ import "@fontsource-variable/plus-jakarta-sans";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
-import { startCustomerSync } from "@/lib/customer-sync";
+import { startCustomerSync, syncCloudCustomer } from "@/lib/customer-sync";
 import { startCloudSync } from "@/lib/cloud-sync";
+import { supabase } from '@/integrations/supabase/client';
+import { Bubbles } from '@/components/Bubbles';
 
 function NotFoundComponent() {
   return (
@@ -121,9 +123,19 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => { void startCloudSync(); startCustomerSync(); }, []);
+  const router = useRouter();
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange(event => {
+      if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT' && event !== 'USER_UPDATED') return;
+      if (event === 'SIGNED_OUT') { queryClient.clear(); return; }
+      window.setTimeout(() => { void syncCloudCustomer().then(() => { void router.invalidate(); void queryClient.invalidateQueries(); }).catch(() => undefined); }, 0);
+    });
+    return () => data.subscription.unsubscribe();
+  }, [queryClient, router]);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Bubbles />
       <ThemeToggle />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />

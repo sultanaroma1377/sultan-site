@@ -21,7 +21,7 @@ export const customerLogin = createServerFn({ method: 'POST' }).inputValidator(d
     const inserted = await sb.from('customer_accounts').insert({ username, password_hash: await h.passwordHash(data.password) }).select('*').single();
     if (inserted.error) throw new Error('Could not create account; try another username');
     account = inserted.data;
-  } else if (!account || await h.passwordHash(data.password, account.password_hash.split(':')[0]) !== account.password_hash) {
+  } else if (!account || account.auth_user_id || await h.passwordHash(data.password, account.password_hash.split(':')[0]) !== account.password_hash) {
     throw new Error('Invalid username or password');
   }
   if (!account) throw new Error('Could not sign in');
@@ -33,11 +33,11 @@ export const customerState = createServerFn({ method: 'GET' }).handler(async () 
   const h = await import('./customer.server');
   const session = await h.requireSession();
   const sb = await h.database();
-  const { data, error } = await sb.from('customer_accounts').select('id,username,data').eq('id', session.customer_id ?? '').single();
+  const { data, error } = await sb.from('customer_accounts').select('id,username,data,auth_user_id').eq('id', session.customer_id ?? '').single();
   if (error) throw new Error('Could not load account');
   const orders = await sb.from('customer_orders').select('data').eq('customer_id', data.id);
   if (orders.error) throw new Error('Could not load orders');
-  return { customer: { id: data.id, username: data.username, password: '', ...shopping.parse(data.data) } satisfies Customer, orders: orders.data.map(o => o.data as unknown as ConfirmedOrder) };
+  return { customer: { id: data.id, username: data.username, password: '', authManaged: Boolean(data.auth_user_id), ...shopping.parse(data.data) } satisfies Customer, orders: orders.data.map(o => o.data as unknown as ConfirmedOrder) };
 });
 
 export const saveCustomer = createServerFn({ method: 'POST' }).inputValidator(d => shopping.parse(d)).handler(async ({ data }) => {

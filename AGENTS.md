@@ -24,3 +24,6 @@
 - Keep expandable customer order summaries and their progress display in a dedicated component so order details remain hidden until opened.
 - Define global themes in Tailwind v4's CSS-first entry and reuse semantic gradient utilities in shared controls; a root-mounted theme switch persists only the viewer's display preference so Admin and customer pages stay consistent without changing shop data.
 - Normalize exact legacy sample content in a tested browser-safe helper on store hydration and writes so local and online catalog reads stay blank without removing merchant-edited content.
+- Bridge verified Cloud Auth customer identities to locked shopping accounts by a unique auth-user UUID, never by supplied emails or IDs; preserve separate legacy username and admin sessions to avoid linking unrelated accounts.
+- Queue scanner payloads in a tested browser-safe helper without disabling input during writes, so consecutive scans dispatch without clicks or lost input.
+- Product-owned images override size-shared images and survive sheet merges; parent-photo edits update only that perfume's stored SKUs.

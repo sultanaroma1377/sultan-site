@@ -1,4 +1,7 @@
 # Tasks
+- [ ] Add email and Google customer sign-in without changing admin sign-in or existing username access.
+- [ ] Remove Admin from customer menu; support individual product photos; auto-dispatch scanned orders.
+- [ ] Keep order text readable with glowing borders and add restrained glowing background bubbles.
 - [x] Remove preset shop content from code and use gold/emerald site-name colors without deleting saved shop content.
 - [x] Apply the requested app-wide luxury light/dark theme; desktop/mobile switching, reload persistence, menu controls, Cloud save/read across browsers and 24 regression tests pass.
 - [ ] Simplify customer order summaries and reveal details with a vertical confirmed/accepted/dispatched stepper.
