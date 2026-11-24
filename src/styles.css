@@ -145,7 +145,7 @@
 .google-sign-in svg { width: 18px; height: 18px; }
 .bubble-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: -1; }
 body { isolation: isolate; }
-.glow-bubble { position: absolute; border-radius: 50%; background: var(--bubble-fill); border: 1px solid var(--bubble-border); box-shadow: var(--bubble-shadow); opacity: var(--bubble-opacity); animation: bubble-drift 19.2s ease-in-out infinite alternate; }
+.glow-bubble { position: absolute; border-radius: 50%; background: var(--bubble-fill); border: 1px solid var(--bubble-border); box-shadow: var(--bubble-shadow); opacity: var(--bubble-opacity); transition: translate 600ms cubic-bezier(.2,.8,.2,1); animation: bubble-drift 19.2s ease-in-out infinite alternate; }
 .bubble-1 { width: 160px; height: 160px; left: 3%; top: 12%; }
 .bubble-2 { width: 90px; height: 90px; right: 5%; top: 25%; animation-delay: -6.4s; }
 .bubble-3 { width: 210px; height: 210px; left: 12%; top: 70%; animation-delay: -12.8s; }

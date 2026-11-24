@@ -20,6 +20,7 @@ import { startCustomerSync, syncCloudCustomer } from "@/lib/customer-sync";
 import { startCloudSync } from "@/lib/cloud-sync";
 import { supabase } from '@/integrations/supabase/client';
 import { Bubbles } from '@/components/Bubbles';
+import { UsernameGate } from '@/components/UsernameGate';
 
 function NotFoundComponent() {
   return (
@@ -139,6 +140,7 @@ function RootComponent() {
       <ThemeToggle />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <UsernameGate />
       <Toaster />
     </QueryClientProvider>
   );

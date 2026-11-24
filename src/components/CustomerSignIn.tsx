@@ -42,7 +42,7 @@ export function CustomerSignIn({ signup, onDone, onBack }: { signup: boolean; on
     } catch (e) { setError(e instanceof Error ? e.message : 'Google sign-in failed. Please try again.'); }
     finally { setBusy(false); }
   }
-  if (pickName) return <div className="mt-6 space-y-4 px-4"><h3 className="font-serif text-2xl">Choose your username</h3><p className="text-sm text-muted-foreground">This unique name appears with your reviews.</p><UsernameForm onSaved={onDone} /><Button variant="link" className="w-full" onClick={onDone}>Skip for now</Button></div>;
+  if (pickName) return <div className="mt-6 space-y-4 px-4"><h3 className="font-serif text-2xl">Choose your username</h3><p className="text-sm text-muted-foreground">This unique name appears with your reviews.</p><UsernameForm onSaved={onDone} /></div>;
   return <div className="mt-6 space-y-5 px-4">
     <h3 className="font-serif text-2xl">{signup ? 'Create account' : 'Login'}</h3>
     <Button variant="outline" className="google-sign-in w-full gap-[10px] px-3" disabled={busy} onClick={() => { void google(); }}><GoogleLogo />Continue with Google</Button>
