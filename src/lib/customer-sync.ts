@@ -17,8 +17,11 @@ function apply(customer: Customer, orders?: ReturnType<typeof store.get>['orders
   finally { applying = false; }
 }
 export async function signInCustomer(username: string, password: string, signup: boolean) {
+  await flushCustomerChanges();
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
   const customer = await customerLogin({ data: { username, password, signup } });
-  apply(customer);
+  apply(customer, []);
   const remote = await customerState(); apply(remote.customer, remote.orders);
 }
 export async function signOutCustomer() {
@@ -36,7 +39,7 @@ export function syncCloudCustomer() {
     if (error || !data.user) return;
     await flushCustomerChanges();
     const customer = await connectCloudCustomer();
-    apply(customer, []);
+    apply(customer, store.get().currentCustomerId === customer.id ? store.get().orders : []);
     await refreshCustomer();
   })().finally(() => { connecting = null; });
   return connecting;

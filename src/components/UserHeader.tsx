@@ -67,7 +67,7 @@ function AccountSheet() {
       </SheetTrigger>
       <SheetContent className="w-full overflow-y-auto border-border bg-card text-foreground sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="font-serif text-2xl">
+          <SheetTitle className="break-words pr-5 font-serif text-2xl">
             {current ? `Hello, ${current.username}` : "Welcome"}
           </SheetTitle>
         </SheetHeader>

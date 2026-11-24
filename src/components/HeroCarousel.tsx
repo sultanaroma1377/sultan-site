@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
+import { productImage } from '@/lib/product-image';
 
 export function HeroCarousel() {
   const slides = useStore((s) => s.carousel);
@@ -15,7 +16,7 @@ export function HeroCarousel() {
       const p = sl.productId ? products.find((x) => x.id === sl.productId) : undefined;
       return {
         id: sl.id,
-        image: sl.image ?? p?.image ?? (p?.variantLabel ? sizes?.find((v) => v.label === p.variantLabel)?.image : undefined),
+        image: sl.image ?? productImage(p, sizes),
         caption: sl.caption ?? p?.name,
         productId: p?.id,
       };

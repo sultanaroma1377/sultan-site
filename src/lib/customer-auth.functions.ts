@@ -18,7 +18,7 @@ export const connectCloudCustomer = createServerFn({ method: 'POST' })
     if (!account) {
       const inserted = await sb.from('customer_accounts').upsert({
         auth_user_id: id,
-        username: `customer-${id}`,
+        username: `customer-${id.replaceAll('-', '').slice(0, 16)}`,
         password_hash: await h.passwordHash(crypto.randomUUID()),
       }, { onConflict: 'auth_user_id', ignoreDuplicates: true }).select('*').maybeSingle();
       if (inserted.error) throw new Error('Could not create your shopping account');

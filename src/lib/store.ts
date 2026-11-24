@@ -4,6 +4,7 @@ import type { EcoVariant, SheetMode } from "./sheet-mapping";
 import { migrateEcoProducts } from "./product-groups";
 import { toast } from "sonner";
 import { cleanShopContent } from "./shop-content";
+import { productImage } from './product-image';
 
 type State = {
   site: SiteSettings;
@@ -95,8 +96,7 @@ export function useStore<T>(selector: (s: State) => T): T {
 /** Product's own image, else the image set for its size (variant label). */
 export function useProductImage(p?: { image?: string; variantLabel?: string }) {
   const variants = useStore((s) => s.sheetSync.variants);
-  if (!p) return undefined;
-  return p.image ?? (p.variantLabel ? variants?.find((v) => v.label === p.variantLabel)?.image : undefined);
+  return productImage(p, variants);
 }
 
 export function uid() {

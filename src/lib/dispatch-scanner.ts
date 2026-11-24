@@ -9,7 +9,7 @@ export function createDispatchScanner(dispatch: (number: string) => Promise<void
     clearTimeout(timer);
     const text = buffer; buffer = '';
     const lines = text.match(/Order:\s*[^\s]+/gi);
-    const numbers = lines ? lines.map(scannedOrderNumber) : [scannedOrderNumber(text)];
+    const numbers = lines ? lines.map(scannedOrderNumber) : text.split(/[\r\n]+/).map(scannedOrderNumber);
     for (const number of numbers) {
       if (!number) continue;
       pending = pending.then(() => dispatch(number)).catch(onError);

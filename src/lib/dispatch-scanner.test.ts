@@ -25,3 +25,11 @@ test('several printed QR payloads dispatch in order and errors do not stop the q
   expect(errors).toBe(1); expect(seen).toEqual(['WS654321']);
   scanner.dispose();
 });
+test('rapid bare order scans with Enter terminators are not merged or lost', async () => {
+  const seen: string[] = [];
+  const scanner = createDispatchScanner(async number => { seen.push(number); }, () => {});
+  scanner.feed('WS123456\n'); scanner.feed('WS654321\n');
+  await scanner.flush();
+  expect(seen).toEqual(['WS123456', 'WS654321']);
+  scanner.dispose();
+});

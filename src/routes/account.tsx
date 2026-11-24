@@ -34,7 +34,7 @@ function AccountPage() {
     <Link to="/" className="text-sm text-primary">← Back to shop</Link>
     <h1 className="mt-6 font-serif text-4xl">Account details</h1>
     {!customer ? <p className="mt-6 text-muted-foreground">Please login to view your account.</p> : <>
-      <p className="mt-2 text-muted-foreground">{customer.username}</p>
+      <p className="mt-2 break-words text-muted-foreground">{customer.username}</p>
       <section className="mt-10 border-t py-8"><div className="flex items-center justify-between gap-4"><h2 className="font-serif text-2xl">Delivery addresses</h2><Button variant="outline" onClick={() => setDraft({ id: crypto.randomUUID(), line1: '', pincode: '', city: '', state: '' })}>Add address</Button></div>
         <div className="mt-5 space-y-3">{customer.addresses.map(a => <div key={a.id} className="flex items-start justify-between gap-4 border-b py-4"><div><p>{a.line1}</p><p className="text-sm text-muted-foreground">{a.city}, {a.state} — {a.pincode}</p></div><Button variant="ghost" size="sm" onClick={() => setDraft(a)}>Edit</Button></div>)}{!customer.addresses.length && <p className="text-muted-foreground">No saved addresses.</p>}</div>
         {draft && <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={e => { e.preventDefault(); void saveAddress(); }}>
