@@ -2,7 +2,7 @@
 - [x] Implement email and Google customer sign-in without changing admin sign-in or existing username access; original Cloud connection and customer/admin isolation tests passed.
 - [x] Remove Admin from customer menu; support individual product photos; auto-dispatch scanned orders; verified with a real checkout before remix.
 - [x] Keep order text readable with glowing borders and add restrained glowing background bubbles; desktop/mobile checks passed before remix.
-- [ ] Recheck the new remix's Cloud tables and email/Google provider settings before repeating sign-in, product saving, and dispatch checks; the remix has a fresh database connection and an empty migration set.
+- [x] Recheck this remix's Cloud tables, email/Google provider settings, admin sign-in, product save/read across browsers and customer sign-in form; Google OAuth secret is still missing, so Google sign-in cannot start.
 - [x] Remove preset shop content from code and use gold/emerald site-name colors without deleting saved shop content.
 - [x] Apply the requested app-wide luxury light/dark theme; desktop/mobile switching, reload persistence, menu controls, Cloud save/read across browsers and 24 regression tests pass.
 - [x] Simplify customer order summaries and reveal details with a vertical confirmed/accepted/dispatched stepper; verified on desktop/mobile with a real order before remix.
@@ -20,3 +20,5 @@
 - [x] Save Eco settings and site edits automatically; verify reload persistence and shopping flow.
 - [x] Apply uploaded Yuzarsif font to the business name.
 - [x] Add G Sheet and Eco mapping checkboxes from the uploaded JSX, with Eco variant settings, and verify both mappings with sample sheet responses.
+- [ ] Refill this remix's empty shop content: products, carousel slides, coupons, footer/site details and Google Sheet API key + Sheet ID.
+- [ ] Restore Google customer sign-in: the hosted backend reports "missing OAuth secret" for Google, so the button fails; needs Google client ID/secret in Auth settings or staff rebinding.
