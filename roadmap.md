@@ -1,17 +1,18 @@
 # Tasks
-- [ ] Add email and Google customer sign-in without changing admin sign-in or existing username access.
-- [ ] Remove Admin from customer menu; support individual product photos; auto-dispatch scanned orders.
-- [ ] Keep order text readable with glowing borders and add restrained glowing background bubbles.
+- [x] Implement email and Google customer sign-in without changing admin sign-in or existing username access; original Cloud connection and customer/admin isolation tests passed.
+- [x] Remove Admin from customer menu; support individual product photos; auto-dispatch scanned orders; verified with a real checkout before remix.
+- [x] Keep order text readable with glowing borders and add restrained glowing background bubbles; desktop/mobile checks passed before remix.
+- [ ] Recheck the new remix's Cloud tables and email/Google provider settings before repeating sign-in, product saving, and dispatch checks; the remix has a fresh database connection and an empty migration set.
 - [x] Remove preset shop content from code and use gold/emerald site-name colors without deleting saved shop content.
 - [x] Apply the requested app-wide luxury light/dark theme; desktop/mobile switching, reload persistence, menu controls, Cloud save/read across browsers and 24 regression tests pass.
-- [ ] Simplify customer order summaries and reveal details with a vertical confirmed/accepted/dispatched stepper.
+- [x] Simplify customer order summaries and reveal details with a vertical confirmed/accepted/dispatched stepper; verified on desktop/mobile with a real order before remix.
 - [ ] Show verified customer usernames on new and existing reviews.
 - [ ] Add Admin profit analysis based on the uploaded dashboard, saved adjustments and historical item costs; verify calculations and available flows.
 - [x] Put recipient above sender on printed labels, add saved optional receiver WhatsApp numbers, and fix review-window contrast; sample PDF, desktop/mobile dialog and receiver tests pass.
-- [ ] Verify WhatsApp checkout persistence through a real order — requires an authenticated customer checkout; not exercised in this turn.
+- [x] Verify WhatsApp checkout persistence through a real order; saved number read back in customer orders before remix.
 - [x] Replace camera dispatch with external scanner input; scanner parsing regression tests pass.
 - [x] Add submitted star-and-text reviews shared across perfume variants; rule tests and desktop/mobile product display pass.
-- [ ] Verify real dispatch and review submission end-to-end — Admin sign-in now works after Cloud connection repair; customer order verification remains pending.
+- [ ] Verify review submission end-to-end after the new remix's Cloud setup is checked; real checkout and automatic dispatch passed before remix.
 - [x] Add secure online customer accounts and customer activity in Admin.
 - [x] Add account details/password change and customer orders pages.
 - [x] Add previous receiver choices at checkout and verify the full customer/admin flow.
