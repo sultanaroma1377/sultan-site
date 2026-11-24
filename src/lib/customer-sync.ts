@@ -31,8 +31,8 @@ export async function signOutCustomer() {
   try { store.set(s => ({ ...s, customers: [], orders: [], currentCustomerId: null })); }
   finally { applying = false; }
 }
-let connecting: Promise<void> | null = null;
-export function syncCloudCustomer() {
+let connecting: Promise<import('./types').Customer | undefined> | null = null;
+export function syncCloudCustomer(): Promise<import('./types').Customer | undefined> {
   if (connecting) return connecting;
   connecting = (async () => {
     const { data, error } = await supabase.auth.getUser();
@@ -41,6 +41,7 @@ export function syncCloudCustomer() {
     const customer = await connectCloudCustomer();
     apply(customer, store.get().currentCustomerId === customer.id ? store.get().orders : []);
     await refreshCustomer();
+    return customer;
   })().finally(() => { connecting = null; });
   return connecting;
 }

@@ -145,13 +145,13 @@
 .google-sign-in svg { width: 18px; height: 18px; }
 .bubble-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: -1; }
 body { isolation: isolate; }
-.glow-bubble { position: absolute; border-radius: 50%; background: var(--bubble-fill); border: 1px solid var(--bubble-border); box-shadow: var(--bubble-shadow); opacity: var(--bubble-opacity); animation: bubble-drift 24s ease-in-out infinite alternate; }
+.glow-bubble { position: absolute; border-radius: 50%; background: var(--bubble-fill); border: 1px solid var(--bubble-border); box-shadow: var(--bubble-shadow); opacity: var(--bubble-opacity); animation: bubble-drift 19.2s ease-in-out infinite alternate; }
 .bubble-1 { width: 160px; height: 160px; left: 3%; top: 12%; }
-.bubble-2 { width: 90px; height: 90px; right: 5%; top: 25%; animation-delay: -8s; }
-.bubble-3 { width: 210px; height: 210px; left: 12%; top: 70%; animation-delay: -16s; }
-.bubble-4 { width: 130px; height: 130px; right: 12%; top: 65%; animation-delay: -4s; }
-.bubble-5 { width: 56px; height: 56px; left: 44%; top: 8%; animation-delay: -12s; }
-.bubble-6 { width: 70px; height: 70px; right: 35%; top: 85%; animation-delay: -20s; }
+.bubble-2 { width: 90px; height: 90px; right: 5%; top: 25%; animation-delay: -6.4s; }
+.bubble-3 { width: 210px; height: 210px; left: 12%; top: 70%; animation-delay: -12.8s; }
+.bubble-4 { width: 130px; height: 130px; right: 12%; top: 65%; animation-delay: -3.2s; }
+.bubble-5 { width: 56px; height: 56px; left: 44%; top: 8%; animation-delay: -9.6s; }
+.bubble-6 { width: 70px; height: 70px; right: 35%; top: 85%; animation-delay: -16s; }
 @keyframes bubble-drift { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(25px, -65px, 0); } }
 
 @media (prefers-reduced-motion: reduce) {

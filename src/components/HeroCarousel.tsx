@@ -36,30 +36,24 @@ export function HeroCarousel() {
 
   const Slide = (
     <div className="relative aspect-[16/7] w-full overflow-hidden rounded-lg border border-border bg-primary-gradient">
-      {active.image ? (
-        <img src={active.image} alt={active.caption ?? "Featured"} className="h-full w-full object-cover" />
-      ) : (
-        <div className="grid h-full w-full place-items-center font-serif text-4xl text-on-gradient">{active.caption}</div>
-      )}
-      {active.caption && (
-        <div className="absolute inset-x-0 bottom-0 bg-carousel-scrim p-5">
-          <p className="font-serif text-2xl text-on-gradient">{active.caption}</p>
-          {active.productId && <p className="text-sm text-on-gradient-muted">Tap to view details</p>}
-        </div>
-      )}
+      <div className="flex h-full transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${idx * 100}%)` }}>
+        {items.map((it) => {
+          const body = (
+            <div className="relative h-full w-full">
+              {it.image ? <img src={it.image} alt={it.caption ?? "Featured"} className="h-full w-full object-cover" /> : <div className="grid h-full w-full place-items-center font-serif text-4xl text-on-gradient">{it.caption}</div>}
+              {it.caption && <div className="absolute inset-x-0 bottom-0 bg-carousel-scrim p-5"><p className="font-serif text-2xl text-on-gradient">{it.caption}</p>{it.productId && <p className="text-sm text-on-gradient-muted">Tap to view details</p>}</div>}
+            </div>
+          );
+          return <div key={it.id} className="h-full w-full shrink-0">{it.productId ? <Link to="/product/$id" params={{ id: it.productId }} className="block h-full">{body}</Link> : body}</div>;
+        })}
+      </div>
     </div>
   );
 
   return (
     <section className="mx-auto max-w-6xl px-4 pb-6 md:px-6">
       <div className="relative">
-        {active.productId ? (
-          <Link to="/product/$id" params={{ id: active.productId }} className="block">
-            {Slide}
-          </Link>
-        ) : (
-          Slide
-        )}
+        {Slide}
         {items.length > 1 && (
           <>
             <Button

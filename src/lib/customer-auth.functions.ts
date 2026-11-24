@@ -29,3 +29,21 @@ export const connectCloudCustomer = createServerFn({ method: 'POST' })
     const shopping = account.data as unknown as Pick<Customer, 'favorites' | 'cart' | 'addresses'>;
     return { id: account.id, username: account.username, password: '', authManaged: true, ...shopping } satisfies Customer;
   });
+export const setCloudCustomerUsername = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { username: string }) => {
+    const username = String(d?.username ?? '').trim().toLowerCase();
+    if (!/^[a-z0-9_.]{3,30}$/.test(username) || username.startsWith('customer-')) throw new Error('Use 3–30 letters, numbers, dots or underscores');
+    return { username };
+  })
+  .handler(async ({ context, data }) => {
+    const h = await import('./customer.server');
+    await h.assertWriteOrigin();
+    const sb = await h.database();
+    const taken = await sb.from('customer_accounts').select('id,auth_user_id').eq('username', data.username).maybeSingle();
+    if (taken.error) throw new Error('Could not check username');
+    if (taken.data && taken.data.auth_user_id !== context.userId) throw new Error('That username is already taken');
+    const updated = await sb.from('customer_accounts').update({ username: data.username }).eq('auth_user_id', context.userId).select('username').single();
+    if (updated.error) throw new Error('That username is already taken');
+    return { username: updated.data.username };
+  });
